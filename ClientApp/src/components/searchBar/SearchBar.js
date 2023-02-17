@@ -42,6 +42,7 @@ export default function SearchBar({ showSearch, onShowSearch, onHideSearch }) {
 
   const keyDownHandler = (event) => {
     if (event.key === "Enter") {
+      clearTimeout(timeoutId);
       onHideSearch();
       navigate(`/Games?search=${searchTerm}`);
     }
