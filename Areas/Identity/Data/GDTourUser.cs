@@ -13,4 +13,7 @@ public class GDTourUser : IdentityUser
     [PersonalData] public string LastName { get; set; }
 
     public ICollection<Alert> Alerts { get; set; }
+    [NotMapped]
+    public ICollection<Event> OrganizedEvents { get; set; }
+    public ICollection<UserEvent> UserEvents { get; set; }
 }

@@ -60,6 +60,29 @@ public class GDTourContext : ApiAuthorizationDbContext<GDTourUser>
             .HasMany(g => g.Alerts)
             .WithOne(a => a.Game)
             .HasForeignKey(a => a.GameId);
+
+        //configure many to many relationship between user and events
+        builder.Entity<UserEvent>()
+            .HasOne<GDTourUser>(ue => ue.Participant)
+            .WithMany(user => user.UserEvents)
+            .HasForeignKey(ue => ue.ParticipantId);
+        builder.Entity<UserEvent>()
+            .HasOne<Event>(ue => ue.Event)
+            .WithMany(ev => ev.UserEvents)
+            .HasForeignKey(ue => ue.EventId);
+
+        //configure one-to-many relationship between user and event
+        builder.Entity<Event>()
+            .HasOne<GDTourUser>(ev => ev.Organizer)
+            .WithMany(use => use.OrganizedEvents)
+            .HasForeignKey(ev => ev.OrganizerId)
+            .HasPrincipalKey(use => use.Id);
+
+        //configure one-to-many relationship between game and event
+        builder.Entity<Event>()
+            .HasOne<Game>(ev => ev.Game)
+            .WithMany(g => g.Events)
+            .HasForeignKey(ev => ev.GameId);
     }
 
     public class DateOnlyConverter : ValueConverter<DateOnly, DateTime>

@@ -16,7 +16,7 @@ public static class SeedData
                 serviceProvider.GetRequiredService<IOptions<OperationalStoreOptions>>());
         // Look for any movies.
         if (context.Games.Any()) return; // DB has been seeded
-        var path = Path.Combine(Directory.GetCurrentDirectory(), "Data", "steam_app_data_1.txt");
+        var path = Path.Combine(Directory.GetCurrentDirectory(), "Data", "two_hundred_games.txt");
         var seeds = await Services.Steam.Steam.GetAppsFromTxt(path);
         context.ChangeTracker.AutoDetectChangesEnabled = false;
         // Map each SteamAppModel to a Game model in the database
