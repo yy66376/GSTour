@@ -1,0 +1,9 @@
+.search-results-none-found-header {
+  text-align: center;
+  font-size: 2.75em;
+}
+
+.search-results-none-found-footer {
+  font-size: 1.5em;
+  color: steelblue;
+}

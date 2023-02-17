@@ -1,0 +1,22 @@
+#search-results-outer {
+  max-width: 550px;
+  position: absolute;
+  width: 70vw;
+  top: 100%;
+  z-index: 5;
+  border: 1px solid #8c8c8c;
+  border-radius: 8px;
+  background-color: #333;
+}
+
+#search-results-show-more {
+  margin-top: 1em;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.game-heading {
+  margin-top: 1em;
+  margin-left: 1.5em;
+}

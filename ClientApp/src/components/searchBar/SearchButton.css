@@ -1,0 +1,25 @@
+.search__submit {
+  --size: 60px;
+  font-size: 1.5rem;
+  margin-left: auto;
+  background: 0;
+  border: 0;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: background 200ms ease-out;
+  width: calc(var(--size) - 10px);
+  height: calc(var(--size) - 10px);
+  color: var(--clr-body);
+}
+
+.search:focus-within .search__submit {
+  background: var(--clr-primary);
+  color: white;
+  box-shadow: 0 0 10px rgba(244, 232, 238, 0.8);
+}
+
+.search:focus-within .search__submit:hover,
+.search:focus-within .search__submit:focus {
+  outline: 0;
+  box-shadow: 0 0 10px white;
+}

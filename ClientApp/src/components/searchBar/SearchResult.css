@@ -1,0 +1,30 @@
+.search-results-item {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  border-bottom: 1px solid #8c8c8c;
+  border-top: 1px solid #8c8c8c;
+  transition: all 0.5s;
+  background-color: rgba(42, 71, 94, 0.3);
+  max-height: 7ch;
+  margin: 0;
+}
+
+.search-results-link {
+  text-decoration: none;
+}
+
+.search-results-game-name {
+  max-width: 380px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.search-result-game-image {
+  height: 100%;
+}
+
+.search-result-name {
+  overflow: hidden;
+}
