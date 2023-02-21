@@ -1,5 +1,6 @@
 using GDTour.Areas.Identity.Data;
 using GDTour.Data;
+using GDTour.Hubs;
 using GDTour.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
@@ -34,14 +35,24 @@ builder.Services.AddRazorPages();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Add SignalR
+builder.Services.AddSignalR();
+
+builder.Services.AddCors(options =>
+    options.AddPolicy("ClientPermission",
+        policy =>
+        {
+            policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("https://localhost:44435/").AllowCredentials();
+        }));
+
 var app = builder.Build();
 
 // Seed data
-// using (var scope = app.Services.CreateScope())
-// {
-//     var services = scope.ServiceProvider;
-//     await SeedData.Initialize(services);
-// }
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    await SeedData.Initialize(services);
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -56,6 +67,8 @@ else
     app.UseHsts();
 }
 
+app.UseCors("ClientPermission");
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
@@ -66,6 +79,7 @@ app.UseAuthorization();
 
 app.MapControllerRoute("default", "{controller}/{action=Index}/{id?}");
 app.MapRazorPages();
+app.MapHub<NotificationHub>("/hubs/notifications");
 
 app.MapFallbackToFile("index.html");
 
