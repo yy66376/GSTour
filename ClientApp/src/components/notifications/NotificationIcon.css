@@ -1,0 +1,17 @@
+.notification-icon {
+  position: relative;
+  width: 50px;
+  height: 50px;
+  font-size: 32px;
+  margin: 0 auto;
+  text-align: center;
+  color: #605dff;
+}
+
+.bell-icon {
+  cursor: pointer;
+}
+
+#notification_count {
+  font-size: 0.45em;
+}

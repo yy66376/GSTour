@@ -1,0 +1,53 @@
+/* Make the notification position below the bell*/
+.notification-dropdown {
+  transition: all 1000ms;
+  z-index: 6;
+  position: absolute;
+  top: 100%;
+  min-width: 25vw;
+  max-width: 42vw;
+  background: #171a21;
+  border-radius: 5px;
+  box-shadow: 2px 2px 3px rgba(255, 255, 255, 0.125);
+  margin: 15px auto 0;
+  padding: 15px;
+  display: none;
+  border-bottom: 0px;
+}
+
+.notification-dropdown:before {
+  content: "";
+  position: absolute;
+  top: -30px;
+  right: 0%;
+  transform: translate(-35%);
+  border: 15px solid;
+  border-color: transparent transparent #171a21 transparent;
+}
+
+.notification-dropdown.active {
+  display: block;
+}
+
+.notifications-section-header {
+  font-size: 2rem;
+  border-bottom: 5px ridge #66c0f4;
+}
+
+.notify-footer {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.no-notifications-icon {
+  width: 25%;
+  display: block;
+  margin: auto;
+}
+
+.notif-loading-spinner {
+  display: block;
+  margin: auto;
+  font-size: 10em;
+}

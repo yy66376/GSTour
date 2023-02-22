@@ -21,7 +21,7 @@ export default function GameDetails() {
     data: {},
     loading: true,
   });
-  const [alert, setAlert] = useState({});
+  const [alert, setAlert] = useState(null);
   const [alertModal, setAlertModal] = useState(false);
   const { gameId } = useParams();
 
@@ -37,19 +37,38 @@ export default function GameDetails() {
 
   // function for fetching alert associated with this game
   const fetchAlertForGame = async (gameId) => {
-    
+    const token = await authService.getAccessToken();
+    const response = await fetch(`api/Alerts?gameId=${gameId}`, {
+      headers: !token ? {} : { Authorization: `Bearer ${token}` },
+    });
+    if (response.ok) {
+      return await response.json();
+    }
+    return null;
   };
 
   // load game detail when component updates
   useEffect(() => {
     const populateGameData = async () => {
       const gameResponse = await fetchGameDetails(gameId);
-      if (gameResponse !== null) {
+      if (gameResponse) {
         setGameState({ data: gameResponse, loading: false });
       } else {
         // tell user that game details api is down
       }
     };
+
+    const populateGameAlert = async () => {
+      const gameAlertResponse = await fetchAlertForGame(gameId);
+      if (gameAlertResponse) {
+        if (gameAlertResponse.length) {
+          setAlert(gameAlertResponse[0]);
+        }
+      } else {
+        // tell user alerts api is down
+      }
+    };
+    populateGameAlert();
     populateGameData();
   }, [gameId]);
 
@@ -193,7 +212,6 @@ export default function GameDetails() {
     } else {
       // redirect to login page
       const returnUrl = window.location.href;
-      console.log(returnUrl);
       const redirectUrl = `${ApplicationPaths.Login}?${
         QueryParameterNames.ReturnUrl
       }=${encodeURIComponent(returnUrl)}`;
@@ -208,7 +226,13 @@ export default function GameDetails() {
   const renderGame = (game) => {
     return (
       <>
-        <AlertModal isOpen={alertModal} toggle={toggle} game={game} />
+        <AlertModal
+          edit={alert !== null}
+          alert={alert ? alert : null}
+          isOpen={alertModal}
+          toggle={toggle}
+          game={game}
+        />
         <Game {...game} />
         <Container className="mt-4 p-0">
           <Row>
@@ -216,7 +240,6 @@ export default function GameDetails() {
               {/* short description */}
               <div id="game-short-description">
                 <p className="m-1 text-center">
-                  {console.log(game.screenshots.length)}
                   {game.shortDescription
                     ? game.shortDescription
                     : "No Description Provided."}
