@@ -1,0 +1,20 @@
+﻿@using GDTour.Models.Email
+@model GDTour.Models.Email.PriceAlertEmailViewModel
+
+@{
+    ViewData["EmailTitle"] = $"{Model.GameName} is on sale!";
+}
+<div style="display: flex; justify-content: center">
+    <img src="@Model.GameHeaderImageUrl" alt="Game Header Image"/>
+</div>
+
+<p>Hi @Model.UserName,</p>
+
+<p>
+    We're excited to let you know that @Model.GameName is currently on sale for @string.Format("{0:C}", Model.FinalPrice), which is less than the price threshold you set at @string.Format("{0:C}", Model.PriceThreshold). Please click the button below to purchase the game at your earliest convenience.
+</p>
+
+<partial name="EmailButton" model="@(new EmailButtonViewModel("Purchase the game", Model.GameUrl))" />
+
+<p>Best,</p>
+<p>The Steam Price Tracker Team</p>

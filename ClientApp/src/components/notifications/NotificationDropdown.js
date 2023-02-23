@@ -7,9 +7,11 @@ import { Link, useNavigate } from "react-router-dom";
 import authService from "../api-authorization/AuthorizeService";
 
 export default function NotificationDropdown(props) {
-  const [fulfilledNotifs, setFulfilledNotifs] = useState([]);
-  const [unfulfilledNotifs, setUnfulfilledNotifs] = useState([]);
-  const [notifLoading, setNotifLoading] = useState(true);
+  const [notifications, setNotifications] = useState({
+    loading: true,
+    fulfilled: [],
+    unfulfilled: [],
+  });
   const navigate = useNavigate();
 
   const fetchNotifsData = async () => {
@@ -38,14 +40,20 @@ export default function NotificationDropdown(props) {
 
         connection.on("ReceiveNotification", (notification) => {
           console.log("Receive notification triggered!");
-          console.log(notification);
           if (notification.isFulfilled) {
-            setFulfilledNotifs((prev) => {
-              return [...prev, notification];
+            setNotifications((prev) => {
+              return {
+                ...prev,
+                fulfilled: [notification, ...prev.fulfilled],
+              };
             });
           } else {
-            setUnfulfilledNotifs((prev) => {
-              return [...prev, notification];
+            console.log("Adding unfulfilled notification");
+            setNotifications((prev) => {
+              return {
+                ...prev,
+                unfulfilled: [notification, ...prev.unfulfilled],
+              };
             });
           }
         });
@@ -54,12 +62,22 @@ export default function NotificationDropdown(props) {
           console.log("Delete notification triggered!");
           console.log(typeof notificationId, typeof isFulfilled);
           if (isFulfilled) {
-            setFulfilledNotifs((prev) => {
-              return prev.filter((notif) => notif.id !== notificationId);
+            setNotifications((prev) => {
+              return {
+                ...prev,
+                fulfilled: prev.fulfilled.filter(
+                  (notif) => notif.id !== notificationId
+                ),
+              };
             });
           } else {
-            setUnfulfilledNotifs((prev) => {
-              return prev.filter((notif) => notif.id !== notificationId);
+            setNotifications((prev) => {
+              return {
+                ...prev,
+                unfulfilled: prev.unfulfilled.filter(
+                  (notif) => notif.id !== notificationId
+                ),
+              };
             });
           }
         });
@@ -69,24 +87,59 @@ export default function NotificationDropdown(props) {
           (notificationId, isFulfilled, email, browser, priceThreshold) => {
             console.log("Edit notification triggered!");
             if (isFulfilled) {
-              setFulfilledNotifs((prev) => {
-                return prev.map((notif) =>
-                  notif.id === notificationId
-                    ? { ...notif, email, browser, priceThreshold }
-                    : notif
+              // move fulfilled notification to unfulfilled
+              setNotifications((prev) => {
+                const oldNotif = prev.fulfilled.find(
+                  (notif) => notif.id === notificationId
                 );
+                const updatedNotif = {
+                  ...oldNotif,
+                  email,
+                  browser,
+                  priceThreshold,
+                  isFulfilled: false,
+                  fulfilledDate: null,
+                  fulfilledPrice: null,
+                  read: false,
+                };
+                if (!oldNotif.read) {
+                  props.onRead();
+                }
+                return {
+                  ...prev,
+                  fulfilled: prev.fulfilled.filter(
+                    (notif) => notif.id !== notificationId
+                  ),
+                  unfulfilled: [updatedNotif, ...prev.unfulfilled],
+                };
               });
             } else {
-              setUnfulfilledNotifs((prev) => {
-                return prev.map((notif) =>
-                  notif.id === notificationId
-                    ? { ...notif, email, browser, priceThreshold }
-                    : notif
-                );
+              setNotifications((prev) => {
+                return {
+                  ...prev,
+                  unfulfilled: prev.unfulfilled.map((notif) =>
+                    notif.id === notificationId
+                      ? { ...notif, email, browser, priceThreshold }
+                      : notif
+                  ),
+                };
               });
             }
           }
         );
+
+        connection.on("ReadNotification", (notificationId) => {
+          console.log("Read notification triggered!");
+          setNotifications((prev) => {
+            return {
+              ...prev,
+              fulfilled: prev.fulfilled.map((notif) =>
+                notif.id === notificationId ? { ...notif, read: true } : notif
+              ),
+            };
+          });
+          props.onRead();
+        });
       } catch (err) {
         console.log(err);
         setTimeout(start, 5000);
@@ -100,10 +153,17 @@ export default function NotificationDropdown(props) {
     const populateNotifsData = async () => {
       const notifResponse = await fetchNotifsData();
       if (notifResponse) {
-        setNotifLoading(false);
-        setFulfilledNotifs(notifResponse.filter((notif) => notif.isFulfilled));
-        setUnfulfilledNotifs(
-          notifResponse.filter((notif) => !notif.isFulfilled)
+        setNotifications((prev) => {
+          return {
+            ...prev,
+            loading: false,
+            fulfilled: notifResponse.filter((notif) => notif.isFulfilled),
+            unfulfilled: notifResponse.filter((notif) => !notif.isFulfilled),
+          };
+        });
+        props.onNumUnread(
+          notifResponse.filter((notif) => notif.isFulfilled && !notif.read)
+            .length
         );
       } else {
         // tell user that alerts details api is down
@@ -114,14 +174,15 @@ export default function NotificationDropdown(props) {
   }, []);
 
   const noNotifs =
-    fulfilledNotifs.length === 0 && unfulfilledNotifs.length === 0;
+    notifications.fulfilled.length === 0 &&
+    notifications.unfulfilled.length === 0;
 
   const seeGamesButtonClickHandler = () => {
     navigate("/Games");
     props.onToggle();
   };
 
-  const contents = notifLoading ? (
+  const contents = notifications.loading ? (
     <>
       <h5 className="text-center">Loading notifications...</h5>
       <Spinner className="notif-loading-spinner mt-3" />
@@ -144,21 +205,21 @@ export default function NotificationDropdown(props) {
           </h6>
         </>
       )}
-      {fulfilledNotifs.length > 0 && (
+      {notifications.fulfilled.length > 0 && (
         <div className="fulfilled-notifications">
           <div className="notifications-section-header">Discounted Games</div>
           <div className="notifications-section-content">
-            {fulfilledNotifs.map((notif) => (
+            {notifications.fulfilled.map((notif) => (
               <NotificationItem key={notif.id} alert={notif} />
             ))}
           </div>
         </div>
       )}
-      {unfulfilledNotifs.length > 0 && (
+      {notifications.unfulfilled.length > 0 && (
         <div className="unfulfilled-notifications">
           <div className="notifications-section-header">Tracked Games</div>
           <div className="notifications-section-content">
-            {unfulfilledNotifs.map((notif) => (
+            {notifications.unfulfilled.map((notif) => (
               <NotificationItem key={notif.id} alert={notif} />
             ))}
           </div>

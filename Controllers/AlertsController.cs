@@ -110,6 +110,14 @@ public class AlertsController : ControllerBase
         alert.Email = alertDTO.Email;
         alert.PriceThreshold = alertDTO.PriceThreshold;
 
+        // if edits were made, the alert must be unfulfilled since new price has to be lower
+        // than the game's current price
+        var oldFulfilled = alert.IsFulfilled;
+        alert.IsFulfilled = false;
+        alert.FulfillDate = null;
+        alert.FulFilledPrice = null;
+        alert.Read = false;
+
         // save changes
         try
         {
@@ -118,7 +126,7 @@ public class AlertsController : ControllerBase
                 .User(User.Identity!.Name!)
                 .EditNotification(
                     alert.Id,
-                    alert.IsFulfilled,
+                    oldFulfilled,
                     alert.Email,
                     alert.Browser,
                     alert.PriceThreshold
@@ -192,6 +200,28 @@ public class AlertsController : ControllerBase
         return NoContent();
     }
 
+    [HttpPatch]
+    [Route("Read/{id}")]
+    [Authorize]
+    public async Task<IActionResult> ReadAlert(int id)
+    {
+        var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+
+        var alert = await _context.Alerts.FindAsync(id);
+        if (alert == null)
+            return NotFound();
+        if (alert.GDTourUserId != currentUserId)
+            return Forbid();
+        if (!alert.IsFulfilled || alert.Read) return BadRequest();
+
+        alert.Read = true;
+        await _context.SaveChangesAsync();
+
+        await _notificationHub.Clients.User(User.Identity!.Name!)
+            .ReadNotification(id);
+        return NoContent();
+    }
+
     private bool AlertExists(int id)
     {
         return (_context.Alerts?.Any(e => e.Id == id)).GetValueOrDefault();
@@ -219,7 +249,7 @@ public class AlertsController : ControllerBase
             PriceThreshold = alert.PriceThreshold,
             GameId = alert.GameId,
             FulfillDate = alert.FulfillDate,
-            FulFilledPrice = alert.FulFilledPrice,
+            FulfilledPrice = alert.FulFilledPrice,
             IsFulfilled = alert.IsFulfilled,
             Read = alert.Read,
             Game = new GameAlertDTO

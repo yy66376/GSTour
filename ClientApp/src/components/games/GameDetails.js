@@ -14,6 +14,7 @@ import {
   QueryParameterNames,
 } from "../api-authorization/ApiAuthorizationConstants";
 import AlertModal from "./AlertModal";
+import { toast } from "react-toastify";
 
 export default function GameDetails() {
   const navigate = useNavigate();
@@ -55,20 +56,19 @@ export default function GameDetails() {
         setGameState({ data: gameResponse, loading: false });
       } else {
         // tell user that game details api is down
+        toast.error("🛑 Unable to contact Games API. 🛑", {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "dark",
+        });
       }
     };
 
-    const populateGameAlert = async () => {
-      const gameAlertResponse = await fetchAlertForGame(gameId);
-      if (gameAlertResponse) {
-        if (gameAlertResponse.length) {
-          setAlert(gameAlertResponse[0]);
-        }
-      } else {
-        // tell user alerts api is down
-      }
-    };
-    populateGameAlert();
     populateGameData();
   }, [gameId]);
 
@@ -206,6 +206,34 @@ export default function GameDetails() {
   };
 
   const modalClickHandler = async () => {
+    const populateGameAlert = async () => {
+      const gameAlertResponse = await fetchAlertForGame(gameId);
+      if (gameAlertResponse) {
+        if (gameAlertResponse.length) {
+          setAlert(gameAlertResponse[0]);
+        } else {
+          setAlert(null);
+        }
+      } else {
+        // tell user alerts api is down
+        toast.error(
+          "🛑 Unable to contact Alerts API. Cannot create track game. 🛑",
+          {
+            position: "top-center",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "dark",
+          }
+        );
+        return;
+      }
+    };
+    await populateGameAlert();
+
     if (await authService.isAuthenticated()) {
       // show modal
       setAlertModal(true);

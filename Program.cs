@@ -3,9 +3,11 @@ using GDTour.Data;
 using GDTour.Hubs;
 using GDTour.Models;
 using GDTour.Services.Email;
+using GDTour.Services.Quartz.Jobs;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
+using Quartz;
 using SteamPriceTracker.Settings;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -42,12 +44,26 @@ builder.Services.AddSwaggerGen();
 // Add SignalR
 builder.Services.AddSignalR();
 
-//builder.Services.AddCors(options =>
-//    options.AddPolicy("ClientPermission",
-//        policy =>
-//        {
-//            policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("https://localhost:44435/").AllowCredentials();
-//        }));
+// Add Quartz Scheduling
+builder.Services.AddQuartz(q =>
+{
+    q.UseMicrosoftDependencyInjectionJobFactory();
+
+    // Create a "key" for the job
+    var jobKey = new JobKey("PriceUpdateJob");
+
+    // Register the job with the DI container
+    q.AddJob<SteamApiPriceUpdateJob>(opts => opts.WithIdentity(jobKey));
+
+    // Create a trigger for the job
+    q.AddTrigger(opts => opts
+        .ForJob(jobKey) // link to the HelloWorldJob
+        .WithIdentity("PriceUpdateJob-trigger") // give the trigger a unique name
+        .WithCronSchedule("0 0 6 * * ?")); // run at 6am everyday
+    //.WithCronSchedule("0/50 * * * * ?")); // run every 50 seconds
+});
+
+builder.Services.AddQuartzHostedService(opt => { opt.WaitForJobsToComplete = true; });
 
 var app = builder.Build();
 

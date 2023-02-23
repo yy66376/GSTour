@@ -46,6 +46,13 @@ export default function AlertModal(props) {
 
       setPriceThresholdValid(ValidityState.Valid);
       setCheckboxValid(ValidityState.Valid);
+    } else {
+      setPriceThreshold("");
+      setEmailChecked(false);
+      setBrowserChecked(false);
+
+      setPriceThresholdValid(ValidityState.Neither);
+      setCheckboxValid(ValidityState.Neither);
     }
   }, [edit, alert]);
 
@@ -184,7 +191,7 @@ export default function AlertModal(props) {
         isOpen={props.isOpen}
         toggle={props.toggle}
         className={props.className}
-        contentClassName="alert-modal"
+        style={{ width: "500px" }}
       >
         <ModalHeader>Track {game.name}</ModalHeader>
         <ModalBody>

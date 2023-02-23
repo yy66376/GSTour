@@ -5,7 +5,7 @@ public class AlertDetailDTO
     public int Id { get; set; }
     public bool IsFulfilled { get; set; } = false;
     public decimal PriceThreshold { get; set; }
-    public decimal? FulFilledPrice { get; set; }
+    public decimal? FulfilledPrice { get; set; }
     public bool Email { get; set; }
     public bool Browser { get; set; }
     public DateTime? FulfillDate { get; set; }
