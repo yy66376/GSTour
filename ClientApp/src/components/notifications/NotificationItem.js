@@ -8,7 +8,7 @@ import AlertModal from "../games/AlertModal";
 import authService from "../api-authorization/AuthorizeService";
 import { toast } from "react-toastify";
 
-export default function NotificationItem({ alert }) {
+export default function NotificationItem({ alert, onLink }) {
   const [deleteModal, setDeleteModal] = useState(false);
   const [editModal, setEditModal] = useState(false);
 
@@ -89,7 +89,11 @@ export default function NotificationItem({ alert }) {
 
   return (
     <div className={`notify-item ${alertIsRead(alert)}`}>
-      <Link className="notify-item-link" to={`/Games/${alert.game.id}`}>
+      <Link
+        className="notify-item-link"
+        to={`/Games/${alert.game.id}`}
+        onClick={onLink}
+      >
         <div className="notify-img">
           <img
             class="notify-img-inner"

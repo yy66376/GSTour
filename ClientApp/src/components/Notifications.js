@@ -21,6 +21,10 @@ export default function Notifications() {
     setNumUnread((prev) => prev - 1);
   };
 
+  const incrementNumUnreadHandler = () => {
+    setNumUnread((prev) => prev + 1);
+  };
+
   useEffect(() => {
     const authFunction = async () => {
       setAuthenticated(await authService.isAuthenticated());
@@ -38,6 +42,7 @@ export default function Notifications() {
             onToggle={toggleHandler}
             onNumUnread={changeNumUnreadHandler}
             onRead={decrementNumUnreadHandler}
+            onFulfill={incrementNumUnreadHandler}
           />
         </div>
       )}

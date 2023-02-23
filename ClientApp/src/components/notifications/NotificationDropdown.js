@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 import "./NotificationDropdown.css";
 import NotificationItem from "./NotificationItem";
 import { Button, Spinner } from "reactstrap";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import authService from "../api-authorization/AuthorizeService";
 
 export default function NotificationDropdown(props) {
@@ -29,7 +29,9 @@ export default function NotificationDropdown(props) {
 
   useEffect(() => {
     const connection = new HubConnectionBuilder()
-      .withUrl("/hubs/notifications")
+      .withUrl("/hubs/notifications", {
+        accessTokenFactory: () => authService.getAccessToken(),
+      })
       .configureLogging(LogLevel.Trace)
       .build();
 
@@ -98,7 +100,7 @@ export default function NotificationDropdown(props) {
                   browser,
                   priceThreshold,
                   isFulfilled: false,
-                  fulfilledDate: null,
+                  fulfillDate: null,
                   fulfilledPrice: null,
                   read: false,
                 };
@@ -140,6 +142,33 @@ export default function NotificationDropdown(props) {
           });
           props.onRead();
         });
+
+        connection.on(
+          "FulfillNotification",
+          (notificationId, fulfilledPrice, fulfillDate) => {
+            console.log("Fulfill notification triggered!");
+            setNotifications((prev) => {
+              // move unfulfilled notification to fulfilled
+              const oldNotif = prev.unfulfilled.find(
+                (notif) => notif.id === notificationId
+              );
+              const updatedNotif = {
+                ...oldNotif,
+                isFulfilled: true,
+                fulfillDate,
+                fulfilledPrice,
+              };
+              props.onFulfill();
+              return {
+                ...prev,
+                unfulfilled: prev.unfulfilled.filter(
+                  (notif) => notif.id !== notificationId
+                ),
+                fulfilled: [updatedNotif, ...prev.fulfilled],
+              };
+            });
+          }
+        );
       } catch (err) {
         console.log(err);
         setTimeout(start, 5000);
@@ -182,6 +211,10 @@ export default function NotificationDropdown(props) {
     props.onToggle();
   };
 
+  const linkClickHandler = () => {
+    props.onToggle();
+  };
+
   const contents = notifications.loading ? (
     <>
       <h5 className="text-center">Loading notifications...</h5>
@@ -210,7 +243,11 @@ export default function NotificationDropdown(props) {
           <div className="notifications-section-header">Discounted Games</div>
           <div className="notifications-section-content">
             {notifications.fulfilled.map((notif) => (
-              <NotificationItem key={notif.id} alert={notif} />
+              <NotificationItem
+                key={notif.id}
+                alert={notif}
+                onLink={linkClickHandler}
+              />
             ))}
           </div>
         </div>
@@ -220,7 +257,11 @@ export default function NotificationDropdown(props) {
           <div className="notifications-section-header">Tracked Games</div>
           <div className="notifications-section-content">
             {notifications.unfulfilled.map((notif) => (
-              <NotificationItem key={notif.id} alert={notif} />
+              <NotificationItem
+                key={notif.id}
+                alert={notif}
+                onLink={linkClickHandler}
+              />
             ))}
           </div>
         </div>
@@ -231,7 +272,7 @@ export default function NotificationDropdown(props) {
             See Games
           </Button>
         )}
-        {!noNotifs && <Button color="primary">See All Tracked Games</Button>}
+        {/* {!noNotifs && <Button color="primary">See All Tracked Games</Button>} */}
       </div>
     </>
   );

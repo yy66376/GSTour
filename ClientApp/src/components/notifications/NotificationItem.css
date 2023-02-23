@@ -34,7 +34,7 @@
 }
 
 .notify-price {
-  width: 15%;
+  width: 90px;
   margin-left: 5px;
 }
 
@@ -43,7 +43,7 @@
 }
 
 .current-price {
-  font-size: 120%;
+  font-size: 101%;
 }
 
 .notify-actions {
@@ -85,7 +85,7 @@
 }
 
 .notify-read-status {
-  font-size: 2.5em;
+  font-size: 3em;
 }
 
 .notify-unread {

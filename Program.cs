@@ -4,9 +4,14 @@ using GDTour.Hubs;
 using GDTour.Models;
 using GDTour.Services.Email;
 using GDTour.Services.Quartz.Jobs;
+using GDTour.Services.SignalR;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 using Quartz;
 using SteamPriceTracker.Settings;
 
@@ -29,6 +34,9 @@ builder.Services
     .AddEntityFrameworkStores<GDTourContext>();
 builder.Services.AddIdentityServer().AddApiAuthorization<GDTourUser, GDTourContext>();
 builder.Services.AddAuthentication().AddIdentityServerJwt();
+builder.Services.TryAddEnumerable(
+    ServiceDescriptor.Singleton<IPostConfigureOptions<JwtBearerOptions>,
+        ConfigureJwtBearerOptions>());
 
 // Configure Email
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
@@ -43,6 +51,7 @@ builder.Services.AddSwaggerGen();
 
 // Add SignalR
 builder.Services.AddSignalR();
+builder.Services.AddSingleton<IUserIdProvider, NameIdentifierBasedUserIdProvider>();
 
 // Add Quartz Scheduling
 builder.Services.AddQuartz(q =>
@@ -59,7 +68,7 @@ builder.Services.AddQuartz(q =>
     q.AddTrigger(opts => opts
         .ForJob(jobKey) // link to the HelloWorldJob
         .WithIdentity("PriceUpdateJob-trigger") // give the trigger a unique name
-        .WithCronSchedule("0 0 6 * * ?")); // run at 6am everyday
+        .WithCronSchedule("0 50 13 * * ?")); // run at 6am everyday
     //.WithCronSchedule("0/50 * * * * ?")); // run every 50 seconds
 });
 
@@ -87,7 +96,6 @@ else
     app.UseHsts();
 }
 
-//app.UseCors("ClientPermission");
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

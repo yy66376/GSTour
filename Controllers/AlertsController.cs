@@ -123,7 +123,7 @@ public class AlertsController : ControllerBase
         {
             await _context.SaveChangesAsync();
             await _notificationHub.Clients
-                .User(User.Identity!.Name!)
+                .User(currentUserId)
                 .EditNotification(
                     alert.Id,
                     oldFulfilled,
@@ -170,7 +170,7 @@ public class AlertsController : ControllerBase
         await _context.SaveChangesAsync();
 
         await _notificationHub.Clients
-            .User(User.Identity!.Name!)
+            .User(currentUserId)
             .ReceiveNotification(CreateAlertDetailDTO(a));
 
         return CreatedAtAction("GetAlert", new { id = a.Id }, CreateAlertDetailDTO(a));
@@ -194,7 +194,7 @@ public class AlertsController : ControllerBase
         await _context.SaveChangesAsync();
 
         await _notificationHub.Clients
-            .User(User.Identity!.Name!)
+            .User(currentUserId)
             .DeleteNotification(id, isFulfilled);
 
         return NoContent();
@@ -217,7 +217,7 @@ public class AlertsController : ControllerBase
         alert.Read = true;
         await _context.SaveChangesAsync();
 
-        await _notificationHub.Clients.User(User.Identity!.Name!)
+        await _notificationHub.Clients.User(currentUserId)
             .ReadNotification(id);
         return NoContent();
     }

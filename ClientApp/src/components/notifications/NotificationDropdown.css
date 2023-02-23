@@ -4,8 +4,8 @@
   z-index: 6;
   position: absolute;
   top: 100%;
-  min-width: 25vw;
-  max-width: 42vw;
+  min-width: 575px;
+  max-width: 50vw;
   background: #171a21;
   border-radius: 5px;
   box-shadow: 2px 2px 3px rgba(255, 255, 255, 0.125);
@@ -13,6 +13,8 @@
   padding: 15px;
   display: none;
   border-bottom: 0px;
+  max-height: 75vh;
+  overflow-y: scroll;
 }
 
 .notification-dropdown:before {
@@ -50,4 +52,18 @@
   display: block;
   margin: auto;
   font-size: 10em;
+}
+
+.notification-dropdown::-webkit-scrollbar {
+  width: 8.5px;
+}
+
+.notification-dropdown::-webkit-scrollbar-track {
+  background-color: transparent;
+  border-radius: 100px;
+}
+
+.notification-dropdown::-webkit-scrollbar-thumb {
+  background-color: #4b4842;
+  border-radius: 100px;
 }
