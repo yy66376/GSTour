@@ -145,7 +145,7 @@ export default function NotificationDropdown(props) {
 
         connection.on(
           "FulfillNotification",
-          (notificationId, fulfilledPrice, fulfillDate) => {
+          (notificationId, fulfilledPrice, fulfillDate, browser) => {
             console.log("Fulfill notification triggered!");
             setNotifications((prev) => {
               // move unfulfilled notification to fulfilled
@@ -159,6 +159,22 @@ export default function NotificationDropdown(props) {
                 fulfilledPrice,
               };
               props.onFulfill();
+
+              if (browser && "Notification" in window) {
+                const moneyFormatter = new Intl.NumberFormat("en-US", {
+                  style: "currency",
+                  currency: "USD",
+                });
+                new Notification(
+                  `${
+                    updatedNotif.game.name
+                  } is on sale for ${moneyFormatter.format(fulfilledPrice)}`,
+                  {
+                    icon: updatedNotif.game.headerImageUrl,
+                    dir: "ltr",
+                  }
+                );
+              }
               return {
                 ...prev,
                 unfulfilled: prev.unfulfilled.filter(
@@ -242,13 +258,19 @@ export default function NotificationDropdown(props) {
         <div className="fulfilled-notifications">
           <div className="notifications-section-header">Discounted Games</div>
           <div className="notifications-section-content">
-            {notifications.fulfilled.map((notif) => (
-              <NotificationItem
-                key={notif.id}
-                alert={notif}
-                onLink={linkClickHandler}
-              />
-            ))}
+            {notifications.fulfilled
+              .sort((a, b) => {
+                const aDate = Date.parse(a.fulfillDate);
+                const bDate = Date.parse(b.fulfillDate);
+                return bDate - aDate;
+              })
+              .map((notif) => (
+                <NotificationItem
+                  key={notif.id}
+                  alert={notif}
+                  onLink={linkClickHandler}
+                />
+              ))}
           </div>
         </div>
       )}
@@ -256,13 +278,15 @@ export default function NotificationDropdown(props) {
         <div className="unfulfilled-notifications">
           <div className="notifications-section-header">Tracked Games</div>
           <div className="notifications-section-content">
-            {notifications.unfulfilled.map((notif) => (
-              <NotificationItem
-                key={notif.id}
-                alert={notif}
-                onLink={linkClickHandler}
-              />
-            ))}
+            {notifications.unfulfilled
+              .sort((a, b) => b.id - a.id)
+              .map((notif) => (
+                <NotificationItem
+                  key={notif.id}
+                  alert={notif}
+                  onLink={linkClickHandler}
+                />
+              ))}
           </div>
         </div>
       )}

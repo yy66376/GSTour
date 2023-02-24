@@ -199,7 +199,7 @@ public static class Steam
         var answer = new List<(int appId, decimal? InitialPrice, decimal? FinalPrice)>();
         var appIdsCommaSeparated = string.Join(",", appIds);
         var appDetailsEndPoint =
-            $"http://store.steampowered.com/api/appdetails?l=english&filters=price_overview&appids={appIdsCommaSeparated}";
+            $"http://store.steampowered.com/api/appdetails?cc=us&filters=price_overview&appids={appIdsCommaSeparated}";
 
         using var httpClient = new HttpClient();
         var jsonString = await httpClient.GetStringAsync(appDetailsEndPoint);

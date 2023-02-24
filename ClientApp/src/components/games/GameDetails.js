@@ -1,7 +1,7 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Game from "./Game";
-import { Col, Container, Row } from "reactstrap";
+import { Button, Col, Container, Row } from "reactstrap";
 import "./GameDetails.css";
 import { CheckCircle, EmojiFrownFill, Steam } from "react-bootstrap-icons";
 import Carousel from "react-multi-carousel";
@@ -206,6 +206,15 @@ export default function GameDetails() {
   };
 
   const modalClickHandler = async () => {
+    if (!(await authService.isAuthenticated())) {
+      const returnUrl = window.location.href;
+      const redirectUrl = `${ApplicationPaths.Login}?${
+        QueryParameterNames.ReturnUrl
+      }=${encodeURIComponent(returnUrl)}`;
+      navigate(redirectUrl);
+      return;
+    }
+
     const populateGameAlert = async () => {
       const gameAlertResponse = await fetchAlertForGame(gameId);
       if (gameAlertResponse) {
@@ -232,19 +241,10 @@ export default function GameDetails() {
         return;
       }
     };
-    await populateGameAlert();
 
-    if (await authService.isAuthenticated()) {
-      // show modal
-      setAlertModal(true);
-    } else {
-      // redirect to login page
-      const returnUrl = window.location.href;
-      const redirectUrl = `${ApplicationPaths.Login}?${
-        QueryParameterNames.ReturnUrl
-      }=${encodeURIComponent(returnUrl)}`;
-      navigate(redirectUrl);
-    }
+    await populateGameAlert();
+    // show modal
+    setAlertModal(true);
   };
 
   const toggle = () => {

@@ -8,5 +8,5 @@ public interface INotificationClient
     Task DeleteNotification(int alertId, bool isFulfilled);
     Task EditNotification(int alertId, bool isFulfilled, bool email, bool browser, decimal priceThreshold);
     Task ReadNotification(int alertId);
-    Task FulfillNotification(int alertId, decimal fulfilledPrice, DateTime fulfillDate);
+    Task FulfillNotification(int alertId, decimal fulfilledPrice, DateTime fulfillDate, bool browser);
 }

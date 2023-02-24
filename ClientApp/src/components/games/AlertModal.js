@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Button,
   Form,
@@ -22,6 +22,12 @@ const ValidityState = {
   Invalid: 2,
 };
 
+const NotificationState = {
+  Default: 0,
+  Granted: 1,
+  Denied: 2,
+};
+
 export default function AlertModal(props) {
   const { game, alert, edit = false } = props;
   const [priceThreshold, setPriceThreshold] = useState(
@@ -37,8 +43,23 @@ export default function AlertModal(props) {
   const [browserChecked, setBrowserChecked] = useState(
     edit ? alert.browser : false
   );
+  const [notificationEnabled, setNotificationEnabled] = useState(
+    NotificationState.Default
+  );
 
   useEffect(() => {
+    switch (Notification.permission) {
+      case "granted":
+        setNotificationEnabled(NotificationState.Granted);
+        break;
+      case "denied":
+        setNotificationEnabled(NotificationState.Denied);
+        break;
+      default:
+        setNotificationEnabled(NotificationState.Default);
+        break;
+    }
+
     if (edit) {
       setPriceThreshold(alert.priceThreshold);
       setEmailChecked(alert.email);
@@ -75,7 +96,23 @@ export default function AlertModal(props) {
     }
   };
 
-  const browserChangeHandler = (event) => {
+  const browserChangeHandler = async (event) => {
+    if (
+      notificationEnabled === NotificationState.Default &&
+      event.target.checked
+    ) {
+      const result = await Notification.requestPermission();
+      if (result === "granted") {
+        console.log("Notification permission granted");
+        setNotificationEnabled(NotificationState.Granted);
+        event.target.checked = true;
+      } else if (result === "denied") {
+        console.log("Notification permission denied");
+        setNotificationEnabled(NotificationState.Denied);
+      } else {
+        console.log("Notification permission default");
+      }
+    }
     setBrowserChecked(event.target.checked);
     if (!event.target.checked && !emailChecked) {
       setCheckboxValid(ValidityState.Invalid);
@@ -243,24 +280,32 @@ export default function AlertModal(props) {
                 Check this if you want to be alerted via email
               </FormText>
 
-              <br />
-              <br />
-              <Label className="me-2" for="browser-input">
-                Browser
-              </Label>
-              <Input
-                name="browser"
-                id="browser-input"
-                type="checkbox"
-                checked={browserChecked}
-                onChange={browserChangeHandler}
-                valid={checkboxValid === ValidityState.Valid}
-                invalid={checkboxValid === ValidityState.Invalid}
-              />
-              <br />
-              <FormText>
-                Check this if you want to be alerted via browser
-              </FormText>
+              {"Notification" in window && (
+                <>
+                  <br />
+                  <br />
+                  <Label className="me-2" for="browser-input">
+                    Browser
+                  </Label>
+                  <Input
+                    name="browser"
+                    id="browser-input"
+                    type="checkbox"
+                    checked={browserChecked}
+                    disabled={notificationEnabled === NotificationState.Denied}
+                    onChange={browserChangeHandler}
+                    valid={checkboxValid === ValidityState.Valid}
+                    invalid={checkboxValid === ValidityState.Invalid}
+                  />
+                  <br />
+                  <FormText>
+                    {Notification.permission !== "denied" &&
+                      "Check this if you want to be alerted via browser"}
+                    {Notification.permission === "denied" &&
+                      "You must enable browser notifications to use this option"}
+                  </FormText>
+                </>
+              )}
               <FormFeedback>
                 You must select one or two of the notification methods
               </FormFeedback>

@@ -44,13 +44,14 @@ public class SteamApiPriceUpdateJob : IJob
     public async Task Execute(IJobExecutionContext jobContext)
     {
         var numGames = await _dbContext.Games.CountAsync();
-        var batchSize = 1000;
+        const int batchSize = 500;
         var numBatches = (int)Math.Ceiling((double)numGames / batchSize);
 
         for (var batch = 0; batch < numBatches; batch++)
         {
             _logger.LogInformation($"Starting price update batch {batch}.");
             var games = await _dbContext.Games
+                .OrderBy(g => g.Id)
                 .Skip(batch * batchSize)
                 .Take(batchSize)
                 .Include(g => g.Alerts)
@@ -79,7 +80,7 @@ public class SteamApiPriceUpdateJob : IJob
                 var (appId, initialPrice, finalPrice) = updatedGamePrices[i];
                 var finalPriceChanged = false;
 
-                if (appId == 220) finalPrice = 0.02M;
+                if (appId == 40) finalPrice = 0.12M;
 
                 _dbContext.Games.Attach(game);
                 if (game.InitialPrice != initialPrice)
@@ -128,7 +129,8 @@ public class SteamApiPriceUpdateJob : IJob
 
                         // Send notification to client through hub to mark notification as fulfilled
                         await _notificationHub.Clients.User(alert.GDTourUser.Id)
-                            .FulfillNotification(alert.Id, (decimal)alert.FulFilledPrice, (DateTime)alert.FulfillDate);
+                            .FulfillNotification(alert.Id, (decimal)alert.FulFilledPrice, (DateTime)alert.FulfillDate,
+                                alert.Browser);
                     }
             }
 
@@ -136,7 +138,7 @@ public class SteamApiPriceUpdateJob : IJob
 
             // Wait 12 seconds before the next call
             _logger.LogInformation("Waiting 12 seconds...");
-            await Task.Delay(30000);
+            await Task.Delay(12000);
             _logger.LogInformation("Done waiting! Continuing to next batch!");
         }
     }

@@ -68,7 +68,7 @@ builder.Services.AddQuartz(q =>
     q.AddTrigger(opts => opts
         .ForJob(jobKey) // link to the HelloWorldJob
         .WithIdentity("PriceUpdateJob-trigger") // give the trigger a unique name
-        .WithCronSchedule("0 50 13 * * ?")); // run at 6am everyday
+        .WithCronSchedule("0 24 9 * * ?")); // run at 6am everyday
     //.WithCronSchedule("0/50 * * * * ?")); // run every 50 seconds
 });
 

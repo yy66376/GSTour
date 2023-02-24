@@ -62,7 +62,7 @@ public class AlertsController : ControllerBase
         if (alert == null)
             return NotFound();
 
-        return alert;
+        return Ok(alert);
     }
 
     // PUT: api/Alerts/5
