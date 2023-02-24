@@ -1,19 +1,13 @@
-﻿using GDTour.Areas.Identity.Data;
-using GDTour.Data;
+﻿using GDTour.Data;
 using GDTour.Hubs;
 using GDTour.Hubs.Clients;
 using GDTour.Models;
-using GDTour.Models;
 using GDTour.Models.Email;
 using GDTour.Services.Email;
-using GDTour.Services.Email;
-using GDTour.Services.Steam;
-using GDTour.Services.Steam;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Quartz;
-using System.Security.Policy;
 
 namespace GDTour.Services.Quartz.Jobs;
 
@@ -137,7 +131,7 @@ public class SteamApiPriceUpdateJob : IJob
             await _dbContext.SaveChangesAsync();
 
             // Wait 12 seconds before the next call
-            _logger.LogInformation("Waiting 12 seconds...");
+            _logger.LogInformation("Waiting 12 seconds before next price update batch...");
             await Task.Delay(12000);
             _logger.LogInformation("Done waiting! Continuing to next batch!");
         }

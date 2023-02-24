@@ -58,18 +58,31 @@ builder.Services.AddQuartz(q =>
 {
     q.UseMicrosoftDependencyInjectionJobFactory();
 
-    // Create a "key" for the job
-    var jobKey = new JobKey("PriceUpdateJob");
+    // Create a "key" for the price update job
+    var priceUpdateJobKey = new JobKey("PriceUpdateJob");
 
     // Register the job with the DI container
-    q.AddJob<SteamApiPriceUpdateJob>(opts => opts.WithIdentity(jobKey));
+    q.AddJob<SteamApiPriceUpdateJob>(opts => opts.WithIdentity(priceUpdateJobKey));
 
     // Create a trigger for the job
     q.AddTrigger(opts => opts
-        .ForJob(jobKey) // link to the HelloWorldJob
+        .ForJob(priceUpdateJobKey) // link to the price update job
         .WithIdentity("PriceUpdateJob-trigger") // give the trigger a unique name
         .WithCronSchedule("0 24 9 * * ?")); // run at 6am everyday
     //.WithCronSchedule("0/50 * * * * ?")); // run every 50 seconds
+
+
+    // Create a "key" for the game update job
+    var gameUpdateJobKey = new JobKey("GameUpdateJob");
+
+    // Register the job with the DI container
+    q.AddJob<SteamSpyApiUpdateJob>(opts => opts.WithIdentity(gameUpdateJobKey));
+
+    // Create a trigger for the job
+    q.AddTrigger(opts => opts
+        .ForJob(gameUpdateJobKey) // link to game update job
+        .WithIdentity("GameUpdateJob-trigger") // give the trigger a unique name
+        .WithCronSchedule("0 24 13 * * ?")); // run at 12:45 everyday
 });
 
 builder.Services.AddQuartzHostedService(opt => { opt.WaitForJobsToComplete = true; });

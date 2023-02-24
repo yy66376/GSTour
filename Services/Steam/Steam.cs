@@ -109,12 +109,22 @@ public static class Steam
     //    return steamAppDetails;
     //}
 
-    public static SteamAppDetail? GetAppDetailsFromJson(string jsonString)
+    public static SteamAppDetail? GetAppDetailsFromJson(string jsonString, bool fromFile, int appId = -1)
     {
         var jsonData = JsonConvert.DeserializeObject<dynamic>(jsonString);
-        if (jsonData is null) throw new Exception("JSON string failed to convert to .NET object.");
-
-        if (!(bool)jsonData.success) return null;
+        if (jsonData == null) throw new Exception("JSON string failed to convert to .NET object.");
+        if (!fromFile)
+        {
+            var success = (bool)jsonData[appId.ToString()].success;
+            if (success)
+                jsonData = jsonData[appId.ToString()].data;
+            else
+                return null;
+        }
+        else if (!(bool)jsonData.success)
+        {
+            return null;
+        }
 
         // Dates can come in all sorts of formats
         string[] formats = { "MMM d, yyyy", "d MMM, yyyy", "MMM yyyy", "MMM, yyyy" };
@@ -180,7 +190,7 @@ public static class Steam
         string json;
         while ((json = await reader.ReadLineAsync()) != null)
         {
-            var appDetail = GetAppDetailsFromJson(json);
+            var appDetail = GetAppDetailsFromJson(json, true);
             if (appDetail != null) appDetails.Add(appDetail);
         }
 
@@ -190,7 +200,7 @@ public static class Steam
     /// <summary>
     /// Contacts the Steam API to update a list of games' pricing information.
     /// </summary>
-    /// <param name="appIds"></param>
+    /// <param name="appIds">A list of game IDs from the Steam Store.</param>
     /// <returns>A list of tuples consisting of the Steam App Id, its initial price, and its final price.</returns>
     /// <exception cref="Exception"></exception>
     public static async Task<List<(int appId, decimal? initialPrice, decimal? finalPrice)>> UpdateAppPrices(
@@ -238,5 +248,37 @@ public static class Steam
         }
 
         return answer;
+    }
+
+    /// <summary>
+    /// Contacts the Steam API to retrieve information about a particular game.
+    /// </summary>
+    /// <param name="appId">A game's ID from the Steam Store.</param>
+    /// <returns>SteamAppDetail containing information about the game including its movies and screenshots.</returns>
+    public static async Task<SteamAppDetail?> GetAppDetails(int appId)
+    {
+        var appDetailsEndPoint = $"https://store.steampowered.com/api/appdetails?l=english&cc=us&appids={appId}";
+        using var httpClient = new HttpClient();
+        try
+        {
+            var jsonString = await httpClient.GetStringAsync(appDetailsEndPoint);
+
+
+            if (!string.IsNullOrEmpty(jsonString)) return GetAppDetailsFromJson(jsonString, false, appId);
+
+            // No response means too many requests. Wait and try again
+            Console.WriteLine("No response, waiting 10 seconds...");
+            await Task.Delay(10000);
+            Console.WriteLine("Retrying.");
+            return await GetAppDetails(appId);
+        }
+        catch (HttpRequestException ex)
+        {
+            Console.WriteLine("Called Steam API too frequently. Waiting 5 seconds...");
+            await Task.Delay(5000);
+
+            // Recursively try again
+            return await GetAppDetails(appId);
+        }
     }
 }
