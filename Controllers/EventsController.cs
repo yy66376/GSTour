@@ -141,11 +141,13 @@ public class EventsController : Controller
 
     // POST: api/Events
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-    [HttpPost("post.{format}"),FormatFilter]
-    public async Task<ActionResult<Event>> PostEvent([FromForm] EventCreatorDTO eventCreator)
+    [HttpPost]
+    [Authorize]
+    public async Task<ActionResult<Event>> PostEvent(EventCreatorDTO eventCreator)
     {
 
         GDTourUser current = _context.GDTourUsers.Where(u => u.Id == "1053ab87-b30e-447e-8e71-7f065461c5c7").FirstOrDefault();
+        
         Game game = _context.Games.Where(g => g.Id == 1).FirstOrDefault();
 
         Event ev = new Event
@@ -160,15 +162,10 @@ public class EventsController : Controller
             OrganizerId = current.Id,
         };
 
-
-        if (_context.Event == null)
-            return Problem("Entity set 'GDTourContext.Events'  is null.");
         _context.Event.Add(ev);
         await _context.SaveChangesAsync();
 
-        var response = CreatedAtAction("GetEvent", new { id = ev.Id }, ev);
-
-        return response;
+        return CreatedAtAction("GetEvent", new { id = ev.Id }, ev);
     }
 
     // DELETE: api/Events/5
