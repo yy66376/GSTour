@@ -70,16 +70,27 @@ export default function EventDetails() {
     populateUser();
   }, [eventId]);
 
-  function handleDelete(e) {
-    const response = fetch("api/Events/" + eventId, {
+  const deleteClickHandler = async () => {
+    const token = await authService.getAccessToken();
+    const response = await fetch(`api/Events/${eventId}`, {
       method: "DELETE",
-      headers: {
-        "Content-type": "application/json; charset=UTF-8", // Indicates the content
-      },
+      headers: !token ? {} : { Authorization: `Bearer ${token}` },
     });
 
     if (response.ok) {
-      navigate("/Events");
+      toast.success("✅ Event successfully deleted. ✅", {
+        position: "top-center",
+        autoClose: 1000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+      });
+      setTimeout(() => {
+        navigate("/Events");
+      }, 2000);
     } else {
       //Tell user the event api is down
       toast.error("🛑 Unable to contact Events API. 🛑", {
@@ -93,11 +104,11 @@ export default function EventDetails() {
         theme: "dark",
       });
     }
-  }
+  };
 
-  async function handleApply() {
+  const applyClickHandler = async () => {
     const token = await authService.getAccessToken();
-    const response = fetch("api/Events/Apply/" + eventId, {
+    const response = await fetch(`api/Events/Apply/${eventId}`, {
       method: "POST",
       headers: !token ? {} : { Authorization: `Bearer ${token}` },
     });
@@ -125,7 +136,7 @@ export default function EventDetails() {
         theme: "dark",
       });
     }
-  }
+  };
 
   const renderEvent = (event) => {
     return (
@@ -151,9 +162,7 @@ export default function EventDetails() {
               <>
                 <Col sm={4}>
                   <div class="track-game d-flex flex-column justify-content-around">
-                    <button onClick={(event) => handleDelete(event.id)}>
-                      Delete
-                    </button>
+                    <button onClick={deleteClickHandler}>Delete</button>
                   </div>
                 </Col>
                 <Col sm={4}>
@@ -168,9 +177,7 @@ export default function EventDetails() {
 
             <Col sm={4}>
               <div class="track-game d-flex flex-column justify-content-around">
-                <button onClick={(event) => handleApply(event.id)}>
-                  Apply
-                </button>
+                <button onClick={applyClickHandler}>Apply</button>
               </div>
             </Col>
           </Row>
