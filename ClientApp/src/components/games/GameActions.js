@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Col, Input, Label, Row } from "reactstrap";
 import "./GameActions.css";
 
@@ -11,6 +11,14 @@ export default function GameActions({
   onChangeSort,
   onChangePageSize,
 }) {
+  const [selectedPageSize, setSelectedPageSize] = useState(pageSize);
+  const [selectedSort, setSelectedSort] = useState(sort);
+
+  useEffect(() => {
+    setSelectedPageSize(pageSize);
+    setSelectedSort(sort);
+  }, [sort, pageSize]);
+
   const resultStart = (page - 1) * pageSize + 1;
   const resultEnd = (page - 1) * pageSize + currentPageSize;
 
@@ -26,10 +34,12 @@ export default function GameActions({
 
   const pageSizeChangeHandler = (event) => {
     onChangePageSize(event.target.value);
+    setSelectedPageSize(event.target.value);
   };
 
   const pageSortChangeHandler = (event) => {
     onChangeSort(event.target.value);
+    setSelectedSort(event.target.value);
   };
 
   return (
@@ -50,10 +60,11 @@ export default function GameActions({
             name="page-size-select"
             id="page-size-select"
             onChange={pageSizeChangeHandler}
+            value={selectedPageSize}
           >
             <option value="10">...</option>
             {pageSizes.map((p) => (
-              <option key={p} value={p} selected={p === pageSize}>
+              <option key={p} value={p.toString()}>
                 {p}
               </option>
             ))}
@@ -69,14 +80,11 @@ export default function GameActions({
             name="page-sort-select"
             id="page-sort-select"
             onChange={pageSortChangeHandler}
+            value={selectedSort}
           >
             <option value="default">...</option>
             {sortOptions.map((sortOption) => (
-              <option
-                key={sortOption.value}
-                value={sortOption.value}
-                selected={sortOption.value === sort}
-              >
+              <option key={sortOption.value} value={sortOption.value}>
                 {sortOption.name}
               </option>
             ))}

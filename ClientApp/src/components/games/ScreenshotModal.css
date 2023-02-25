@@ -1,0 +1,8 @@
+.modal-dialog {
+  max-width: fit-content !important;
+  top: 15vh;
+}
+
+.screenshot-thumbnail {
+  cursor: zoom-in;
+}

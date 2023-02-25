@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import Game from "./games/Game";
 import { Container } from "reactstrap";
 import ReactPaginate from "react-paginate";
@@ -25,7 +25,6 @@ export default function Games() {
     data: {},
     loading: true,
   });
-  const navigate = useNavigate();
 
   console.log("Rendered!");
 
@@ -34,7 +33,7 @@ export default function Games() {
   let pageSize = parseInt(
     searchParams.get("pageSize") ? searchParams.get("pageSize") : 10
   );
-  let sort = searchParams.get("sort");
+  let sort = searchParams.get("sort") || "default";
   let search = searchParams.get("search");
 
   const fetchGameData = useCallback(async () => {
@@ -57,7 +56,6 @@ export default function Games() {
   // populate games when the component mounts
   useEffect(() => {
     const populateGamesData = async () => {
-      console.log("fetching new data");
       const response = await fetchGameData();
       if (response !== null) {
         setGameState({ data: response, loading: false });
@@ -98,8 +96,24 @@ export default function Games() {
   };
 
   const initialPage = page ? page - 1 : 0;
-  console.log("Initial page: " + initialPage);
   const renderGames = (games) => {
+    if (games.length === 0) {
+      return (
+        <>
+          <p className="text-center search-results-none-found-header mt-4">
+            There are no search games matching your search term: {search}
+          </p>
+          <img
+            className="img-fluid  d-block m-auto"
+            src={process.env.PUBLIC_URL + "/images/dead_file.png"}
+            alt="No search results found"
+          />
+          <p className="text-center search-results-none-found-footer">
+            Please try another search term.
+          </p>
+        </>
+      );
+    }
     return (
       <>
         {/* Heading */}

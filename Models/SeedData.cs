@@ -67,6 +67,6 @@ public static class SeedData
 
         context.ChangeTracker.DetectChanges();
         await context.SaveChangesAsync();
-        context.ChangeTracker.DetectChanges();
+        context.ChangeTracker.AutoDetectChangesEnabled = true;
     }
 }
