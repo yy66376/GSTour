@@ -35,7 +35,7 @@ const AppRoutes = [
     element: <EventDetails />,
   },
   {
-    path: "/Events/Create_Event",
+    path: "/Events/Create",
     requireAuth: true,
     element: <EventCreator />,
   },

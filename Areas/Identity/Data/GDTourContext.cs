@@ -17,6 +17,7 @@ public class GDTourContext : ApiAuthorizationDbContext<GDTourUser>
     public DbSet<Alert> Alerts { get; set; }
     public DbSet<GDTourUser> GDTourUsers { get; set; }
     public DbSet<UserEvent> UserEvents { get; set; }
+    public DbSet<Event> Events { get; set; }
 
     public GDTourContext(DbContextOptions options, IOptions<OperationalStoreOptions> operationalStoreOptions)
         : base(options, operationalStoreOptions)

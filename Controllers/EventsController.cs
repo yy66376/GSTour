@@ -43,18 +43,24 @@ public class EventsController : Controller
         int pageSize = 10
     )
     {
-        var events = _context.Event.Select(ev => ev).Include(ev => ev.Game).Include(ev=>ev.Organizer);
+        var events = _context.Events
+            .Include(ev => ev.Game)
+            .Include(ev=>ev.Organizer);
         //if (!string.IsNullOrEmpty(search))
         //    events = events.Where(ev => ev.Name.Contains(search));
 
         //events = events.OrderBy(ev => ev.Date.Year).ThenBy(ev => ev.Date.Month).ThenBy(ev=>ev.Date.Day);
 
         var result = await PaginatedList<Event>.CreateAsync(events.AsNoTracking(), page, pageSize);
-        EventListDTO[] EventsList = new EventListDTO[result.Count];
-        int x = 0;
-        foreach(var ev in result.ToArray())
+
+        return new EventPageDTO()
         {
-            EventsList[x++] = new EventListDTO
+            PageIndex = result.PageIndex,
+            TotalPages = result.TotalPages,
+            HasNextPage = result.HasNextPage,
+            HasPreviousPage = result.HasPreviousPage,
+            TotalResults = result.TotalItems,
+            Events = result.Select(ev => new EventListDTO
             {
                 Id = ev.Id,
                 Name = ev.Name,
@@ -64,16 +70,7 @@ public class EventsController : Controller
                 OrganizerId = ev.OrganizerId,
                 OrganizerName = ev.Organizer.UserName,
                 HeaderImageUrl = ev.Game.HeaderImageUrl
-            };
-        }
-        return new EventPageDTO()
-        {
-            PageIndex = result.PageIndex,
-            TotalPages = result.TotalPages,
-            HasNextPage = result.HasNextPage,
-            HasPreviousPage = result.HasPreviousPage,
-            TotalResults = result.TotalItems,
-            Events = EventsList
+            }).ToArray()
         };
     }
 
@@ -81,7 +78,7 @@ public class EventsController : Controller
     [HttpGet("{id}")]
     public async Task<ActionResult<EventDetailDTO>> GetEvent(int id)
     {
-        var ev = await _context.Event
+        var ev = await _context.Events
             .Include(ev => ev.Organizer)
             .Include(ev => ev.Game)
             .FirstOrDefaultAsync(ev => ev.Id == id);
@@ -93,7 +90,6 @@ public class EventsController : Controller
         {
             participantNames[x++] = ue.UserName;
         }
-
 
         if (ev == null)
             return NotFound();
@@ -146,9 +142,10 @@ public class EventsController : Controller
     public async Task<ActionResult<Event>> PostEvent(EventCreatorDTO eventCreator)
     {
 
-        GDTourUser current = _context.GDTourUsers.Where(u => u.Id == "1053ab87-b30e-447e-8e71-7f065461c5c7").FirstOrDefault();
-        
-        Game game = _context.Games.Where(g => g.Id == 1).FirstOrDefault();
+        var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+        var currentUser = await _userManager.FindByIdAsync(currentUserId);
+
+        var game = await _context.Games.FindAsync(eventCreator.GameId);
 
         Event ev = new Event
         {
@@ -159,26 +156,57 @@ public class EventsController : Controller
             FirstRoundGameCount = eventCreator.FirstRoundGameCount,
             ParticipantsPerGame = 2,
             GameId = game.Id,
-            OrganizerId = current.Id,
+            Game = game,
+            OrganizerId = currentUser.Id,
+            Participants = new List<GDTourUser>(),
+            
         };
 
-        _context.Event.Add(ev);
+        await _context.Events.AddAsync(ev);
         await _context.SaveChangesAsync();
 
         return CreatedAtAction("GetEvent", new { id = ev.Id }, ev);
     }
 
+    // POST: api/Events/Apply/5
+    [HttpPost]
+    [Authorize]
+    [Route("Apply/{id}")]
+    public async Task<ActionResult> ApplyEvent(int id) 
+    {
+        var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+        var currentUser = await _userManager.FindByIdAsync(currentUserId);
+        var currentEvent = await _context.Events.FindAsync(id);
+
+        UserEvent userEvent = new UserEvent {
+            ParticipantId = currentUserId,
+            Participant = currentUser,
+            EventId = id,
+            Event = currentEvent
+        };
+        await _context.UserEvents.AddAsync(userEvent);
+        await _context.SaveChangesAsync();
+
+        currentUser.UserEvents.Add(userEvent);
+        currentEvent.UserEvents.Add(userEvent);
+        currentEvent.Participants.Add(currentUser);
+        
+        await _context.SaveChangesAsync();
+        return Ok();
+    }
+
+
     // DELETE: api/Events/5
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteEvent(int id)
     {
-        if (_context.Event == null)
+        if (_context.Events == null)
             return NotFound();
-        var Event = await _context.Event.FindAsync(id);
+        var Event = await _context.Events.FindAsync(id);
         if (Event == null)
             return NotFound();
 
-        _context.Event.Remove(Event);
+        _context.Events.Remove(Event);
         await _context.SaveChangesAsync();
 
         return NoContent();
@@ -186,7 +214,7 @@ public class EventsController : Controller
 
     private bool EventExists(int id)
     {
-        return (_context.Event?.Any(e => e.Id == id)).GetValueOrDefault();
+        return (_context.Events?.Any(e => e.Id == id)).GetValueOrDefault();
     }
 }
 

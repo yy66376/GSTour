@@ -2,7 +2,7 @@
 import { useSearchParams, useNavigate } from "react-router-dom";
 import Game from "./games/Game";
 import Event from "./events/Event";
-import { Container } from "reactstrap";
+import { Container, Button } from "reactstrap";
 import ReactPaginate from "react-paginate";
 import { ArrowLeft, ArrowRight } from "react-bootstrap-icons";
 import GameActions from "./games/GameActions";
@@ -98,6 +98,10 @@ export default function Events() {
     setSearchParams(searchParams);
   };
 
+  const createButtonClickHandler = () => {
+    navigate("/Events/Create");
+  };
+
   const initialPage = page ? page - 1 : 0;
   console.log("Initial page: " + initialPage);
   const renderEvents = (events) => {
@@ -125,6 +129,12 @@ export default function Events() {
           onChangeSort={sortChangeHandler}
           onChangePageSize={pageSizeChangeHandler}
         />
+
+        <div className="create-event-container d-flex justify-content-end mt-3">
+          <Button color="primary" onClick={createButtonClickHandler}>
+            Create Event
+          </Button>
+        </div>
 
         <Container className="p-0">
           {/* {events.length === 0 && } */}

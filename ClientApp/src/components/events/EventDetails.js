@@ -4,6 +4,8 @@ import Event from "./Event";
 import { Col, Container, Row } from "reactstrap";
 import "./EventDetails.css";
 import { useNavigate } from "react-router-dom";
+import authService from "../api-authorization/AuthorizeService";
+import { toast } from "react-toastify";
 
 export default function EventDetails() {
   const navigate = useNavigate();
@@ -12,6 +14,7 @@ export default function EventDetails() {
     loading: true,
     url: "/Events/Edit/",
   });
+  const [userId, setUserId] = useState("");
   const { eventId } = useParams();
 
   // function for fetching event detail
@@ -22,27 +25,54 @@ export default function EventDetails() {
       data = await response.json();
     } else {
       // tell user that event api is down
+      toast.error("🛑 Unable to contact Events API. 🛑", {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+      });
     }
     return data;
   };
 
   // load event detail when component updates
   useEffect(() => {
-    const populateGameData = async () => {
+    const populateEventData = async () => {
       const gameResponse = await fetchEventDetails(eventId);
       if (gameResponse !== null) {
         var temp = eventState.url + eventId;
         setEventState({ data: gameResponse, loading: false, url: temp });
       } else {
         // tell user that event details api is down
+        toast.error("🛑 Unable to contact Events API. 🛑", {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "dark",
+        });
       }
     };
-    populateGameData();
+    const populateUser = async () => {
+      if (await authService.isAuthenticated()) {
+        setUserId((await authService.getUser()).sub);
+      }
+    };
+
+    populateEventData();
+    populateUser();
   }, [eventId]);
 
   function handleDelete(e) {
     const response = fetch("api/Events/" + eventId, {
-      method: "Delete",
+      method: "DELETE",
       headers: {
         "Content-type": "application/json; charset=UTF-8", // Indicates the content
       },
@@ -50,6 +80,50 @@ export default function EventDetails() {
 
     if (response.ok) {
       navigate("/Events");
+    } else {
+      //Tell user the event api is down
+      toast.error("🛑 Unable to contact Events API. 🛑", {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+      });
+    }
+  }
+
+  async function handleApply() {
+    const token = await authService.getAccessToken();
+    const response = fetch("api/Events/Apply/" + eventId, {
+      method: "POST",
+      headers: !token ? {} : { Authorization: `Bearer ${token}` },
+    });
+
+    if (!response.ok) {
+      toast.error("🛑 Unable to contact Events API. Unable to apply 🛑", {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+      });
+    } else {
+      toast.success(`✅ You have successfully applied to this event ✅`, {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+      });
     }
   }
 
@@ -73,23 +147,30 @@ export default function EventDetails() {
             </Col>
           </Row>
           <Row>
-            <Col sm="1">
+            {userId !== "" && userId === eventState.data.organizerId && (
+              <>
+                <Col sm={4}>
+                  <div class="track-game d-flex flex-column justify-content-around">
+                    <button onClick={(event) => handleDelete(event.id)}>
+                      Delete
+                    </button>
+                  </div>
+                </Col>
+                <Col sm={4}>
+                  <div class="track-game d-flex flex-column justify-content-around">
+                    <Link to={eventState.url}>
+                      <h6 class="text-center">Edit</h6>
+                    </Link>
+                  </div>
+                </Col>
+              </>
+            )}
+
+            <Col sm={4}>
               <div class="track-game d-flex flex-column justify-content-around">
-                <button onClick={(event) => handleDelete(event.id)}>
-                  Delete
+                <button onClick={(event) => handleApply(event.id)}>
+                  Apply
                 </button>
-              </div>
-            </Col>
-            <Col sm="1">
-              <div class="track-game d-flex flex-column justify-content-around">
-                <Link to={eventState.url}>
-                  <h6 class="text-center">Edit</h6>
-                </Link>
-              </div>
-            </Col>
-            <Col sm="1">
-              <div class="track-game d-flex flex-column justify-content-around">
-                <h6 class="text-center">Apply</h6>
               </div>
             </Col>
           </Row>

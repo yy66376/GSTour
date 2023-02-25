@@ -44,6 +44,29 @@ public class GamesController : ControllerBase
         return Ok(searchResult);
     }
 
+    [HttpGet]
+    [Route("SearchAll")]
+    public async Task<ActionResult<IEnumerable<Game>>> SearchGamesAll(string q="") {
+        var gameQuery = from g in _context.Games select g;
+
+        if (string.IsNullOrEmpty(q))
+            return BadRequest();
+
+        gameQuery = gameQuery.Where(g => g.Name.Contains(q)).AsNoTracking();
+        var games = await gameQuery.Select(g => new { g.Id, g.Name, g.HeaderImageUrl}).ToListAsync();
+
+        var results = games.Select(g => new GameSelectDTO{
+            Id = g.Id,
+            Name = g.Name,
+            HeaderImageUrl = g.HeaderImageUrl
+        });
+
+        if (results.Count() == 0)
+            return NotFound(results);
+
+        return Ok(results);
+    }
+
     // GET: api/Games
     [HttpGet]
     public async Task<ActionResult<GamePageDTO>> GetGames(
