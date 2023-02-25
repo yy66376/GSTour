@@ -6,21 +6,22 @@
   border: 1px solid #8c8c8c;
   border-radius: 5px;
   background-color: rgba(42, 71, 94, 0.3);
-  height: 14vh;
+  height: 200px;
 }
 
 #game-short-description p {
   overflow-y: auto;
 }
 
-
-.metacritic-reviews {
+.metacritic-reviews,
+.purchase-on-steam,
+.track-game {
   margin-top: 2vh;
   padding: 1em;
   border: 1px solid #8c8c8c;
   border-radius: 5px;
   background-color: rgba(42, 71, 94, 0.3);
-  height: 14vh;
+  height: 150px;
 }
 
 .metascore:hover,
@@ -64,12 +65,6 @@
 .purchase-on-steam,
 .track-game {
   cursor: pointer;
-  margin-top: 2vh;
-  padding: 1em;
-  border: 1px solid #8c8c8c;
-  border-radius: 5px;
-  background-color: rgba(42, 71, 94, 0.3);
-  height: 14vh;
 }
 
 #steam-purchase-link:link,
@@ -77,4 +72,18 @@
 #steam-purchase-link:visited,
 #steam-purchase-link:active {
   text-decoration: none;
+}
+
+.image-item,
+.movie-item {
+  margin-left: 5px;
+  margin-right: 5px;
+}
+
+.media-section {
+  border: 1px solid #8c8c8c;
+  border-radius: 5px;
+  background-color: rgba(42, 71, 94, 0.3);
+  padding-top: 1em;
+  padding-bottom: 1em;
 }

@@ -12,6 +12,7 @@ import { LoginMenu } from "./api-authorization/LoginMenu";
 import "./NavMenu.css";
 import SearchBar from "./searchBar/SearchBar";
 import OutsideAlerter from "./utility/OutsideAlerter";
+import Notifications from "./Notifications";
 
 export class NavMenu extends Component {
   static displayName = NavMenu.name;
@@ -73,11 +74,7 @@ export class NavMenu extends Component {
                 </NavLink>
               </NavItem>
               <NavItem>
-                <NavLink
-                  tag={Link}
-                  className="text-dark"
-                  to="/Games"
-                >
+                <NavLink tag={Link} className="text-dark" to="/Games">
                   Games
                 </NavLink>
               </NavItem>
@@ -88,6 +85,7 @@ export class NavMenu extends Component {
               </NavItem>
               <LoginMenu></LoginMenu>
             </ul>
+            <Notifications />
             <OutsideAlerter onClick={this.hideSearchResults}>
               <SearchBar
                 showSearch={this.state.showSearchResults}

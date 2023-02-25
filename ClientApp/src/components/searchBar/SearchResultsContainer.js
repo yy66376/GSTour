@@ -22,11 +22,19 @@ export default function SearchResultsContainer({
         </h6>
       </div>
       <div id="search-results-inner">
-        {searchData.items.map((game) => {
-          return (
-            <SearchResult key={game.id} item={game} onClick={onResultClick} />
-          );
-        })}
+        {searchData.items.length === 0 && (
+          <img
+            className="img-fluid"
+            src={process.env.PUBLIC_URL + "/images/search_no_result.webp"}
+            alt="No Search Results Icon"
+          />
+        )}
+        {searchData.items.length > 0 &&
+          searchData.items.map((game) => {
+            return (
+              <SearchResult key={game.id} item={game} onClick={onResultClick} />
+            );
+          })}
       </div>
       <div id="search-results-show-more">
         <Link

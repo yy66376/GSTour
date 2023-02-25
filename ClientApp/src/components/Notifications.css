@@ -1,0 +1,10 @@
+/* Align the drop down with the bell */
+.notification-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.notification-wrap {
+  border-bottom: 0px;
+}
