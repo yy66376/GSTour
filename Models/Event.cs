@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using NuGet.Protocol.Core.Types;
 using GDTour.Areas.Identity.Data;
+using Newtonsoft.Json;
 
 namespace GDTour.Models
 {
@@ -19,10 +20,15 @@ namespace GDTour.Models
         public int FirstRoundGameCount { get; set; }
 
         // Navigational Properties
+        [System.Text.Json.Serialization.JsonIgnore]
         public int GameId { get; set; }
+        [System.Text.Json.Serialization.JsonIgnore]
         public Game Game { get; set; }
+        [System.Text.Json.Serialization.JsonIgnore]
         public string OrganizerId { get; set; }
+        [System.Text.Json.Serialization.JsonIgnore]
         public GDTourUser Organizer { get; set; }
+        [NotMapped]
         public ICollection<GDTourUser> Participants { get; set; }
         public ICollection<UserEvent> UserEvents { get; set; }
     }

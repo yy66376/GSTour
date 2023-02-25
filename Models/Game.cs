@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Newtonsoft.Json;
+using System.ComponentModel.DataAnnotations;
 
 namespace GDTour.Models;
 
@@ -37,5 +38,6 @@ public class Game
     public ICollection<Screenshot> Screenshots { get; set; }
     public ICollection<Movie> Movies { get; set; }
     public ICollection<Alert> Alerts { get; set; }
+    [JsonIgnore]
     public ICollection<Event> Events { get; set; }
 }

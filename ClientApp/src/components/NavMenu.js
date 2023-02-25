@@ -80,7 +80,16 @@ export class NavMenu extends Component {
                 >
                   Games
                 </NavLink>
-              </NavItem>
+                </NavItem>
+                <NavItem>
+                    <NavLink
+                        tag={Link}
+                        className="text-dark"
+                        to="/Events"
+                    >
+                        Events
+                    </NavLink>
+                </NavItem>
               <NavItem>
                 <NavLink tag={Link} className="text-dark" to="/fetch-data">
                   Fetch data

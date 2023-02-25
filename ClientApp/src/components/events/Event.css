@@ -1,0 +1,30 @@
+﻿.list-grid-item {
+    border: 1px solid #8c8c8c;
+    border-radius: 6px;
+    transition: all 0.5s;
+    background-color: rgba(42, 71, 94, 0.3);
+}
+
+    .list-grid-item:hover {
+        -webkit-box-shadow: 0 0 20px 0px gray;
+        box-shadow: 0 0 20px 0px gray;
+        -webkit-transition: all 0.5s;
+        transition: all 0.5s;
+        border: transparent;
+    }
+
+.games-listing-item {
+    color: inherit;
+    text-decoration: none;
+}
+
+.free-game {
+    font-weight: bold;
+    color: green;
+}
+
+.discounted-price {
+    color: green;
+    text-decoration: line-through;
+    font-weight: bolder;
+}
