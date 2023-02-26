@@ -132,7 +132,7 @@ export default function EventDetails() {
 
   async function handleApply() {
     const token = await authService.getAccessToken();
-    const response = fetch("api/Events/Apply/" + eventId, {
+    const response = await fetch(`api/Events/Apply/${eventId}`, {
       method: "POST",
       headers: !token ? {} : { Authorization: `Bearer ${token}` },
     });
@@ -160,7 +160,7 @@ export default function EventDetails() {
         theme: "dark",
       });
     }
-  }
+  };
 
   const renderEvent = (event) => {
     return (

@@ -1,22 +1,22 @@
 ﻿using AutoMapper.Configuration.Conventions;
+using Duende.IdentityServer.Extensions;
+using GDTour.Areas.Identity.Data;
 using GDTour.Data;
 using GDTour.Models;
 using GDTour.Models.Utility;
 using GDTour.Services.Steam;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis.Elfie.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using GDTour.Areas.Identity.Data;
-using System.Collections;
-using Microsoft.AspNetCore.Identity;
-using Duende.IdentityServer.Extensions;
-using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace GDTour.Controllers;
 
@@ -45,7 +45,7 @@ public class EventsController : Controller
     {
         var events = _context.Events
             .Include(ev => ev.Game)
-            .Include(ev=>ev.Organizer);
+            .Include(ev => ev.Organizer);
         //if (!string.IsNullOrEmpty(search))
         //    events = events.Where(ev => ev.Name.Contains(search));
 
@@ -98,13 +98,10 @@ public class EventsController : Controller
             .Include(ev => ev.Game)
             .FirstOrDefaultAsync(ev => ev.Id == id);
 
-        var participants = _context.UserEvents.Where(ue => ue.EventId == id).Select(ue=>ue.Participant);
+        var participants = _context.UserEvents.Where(ue => ue.EventId == id).Select(ue => ue.Participant);
         string[] participantNames = new string[participants.Count()];
-        int x = 0;
-        foreach(var ue in participants)
-        {
-            participantNames[x++] = ue.UserName;
-        }
+        var x = 0;
+        foreach (var ue in participants) participantNames[x++] = ue.UserName;
 
         if (ev == null)
             return NotFound();
@@ -166,13 +163,12 @@ public class EventsController : Controller
     [Authorize]
     public async Task<ActionResult<Event>> PostEvent(EventCreatorDTO eventCreator)
     {
-
         var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
         var currentUser = await _userManager.FindByIdAsync(currentUserId);
 
         var game = await _context.Games.FindAsync(eventCreator.GameId);
 
-        Event ev = new Event
+        var ev = new Event
         {
             Name = eventCreator.Name,
             Date = eventCreator.Date,
@@ -183,21 +179,24 @@ public class EventsController : Controller
             GameId = game.Id,
             Game = game,
             OrganizerId = currentUser.Id,
-            Participants = new List<GDTourUser>(),
-            
+            UserEvents = new List<UserEvent>(),
+            Participants = new List<GDTourUser>()
         };
 
         await _context.Events.AddAsync(ev);
         await _context.SaveChangesAsync();
 
-        return CreatedAtAction("GetEvent", new { id = ev.Id }, ev);
+        return CreatedAtAction("GetEvent", new
+        {
+            id = ev.Id
+        }, ev);
     }
 
     // POST: api/Events/Apply/5
     [HttpPost]
     [Authorize]
     [Route("Apply/{id}")]
-    public async Task<ActionResult> ApplyEvent(int id) 
+    public async Task<ActionResult> ApplyEvent(int id)
     {
 
         var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
@@ -228,12 +227,13 @@ public class EventsController : Controller
     [Authorize]
     public async Task<IActionResult> DeleteEvent(int id)
     {
+        var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
 
-        if (_context.Events == null)
+        var e = await _context.Events.FindAsync(id);
+        if (e == null)
             return NotFound();
-        var Event = await _context.Events.FindAsync(id);
-        if (Event == null)
-            return NotFound();
+        if (e.OrganizerId != currentUserId)
+            return Forbid();
 
         var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
         if(currentUserId != Event.OrganizerId)
@@ -256,4 +256,3 @@ public class EventsController : Controller
         return (_context.Events?.Any(e => e.Id == id)).GetValueOrDefault();
     }
 }
-
