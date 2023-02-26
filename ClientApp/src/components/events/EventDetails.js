@@ -1,7 +1,7 @@
 ﻿import { useParams, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Event from "./Event";
-import { Col, Container, Row } from "reactstrap";
+import { Col, Container, Row, Button } from "reactstrap";
 import "./EventDetails.css";
 import { useNavigate } from "react-router-dom";
 import authService from "../api-authorization/AuthorizeService";
@@ -70,30 +70,37 @@ export default function EventDetails() {
     populateUser();
   }, [eventId]);
 
-  const deleteClickHandler = async () => {
-    const token = await authService.getAccessToken();
-    const response = await fetch(`api/Events/${eventId}`, {
-      method: "DELETE",
-      headers: !token ? {} : { Authorization: `Bearer ${token}` },
-    });
-
-    if (response.ok) {
-      toast.success("✅ Event successfully deleted. ✅", {
-        position: "top-center",
-        autoClose: 1000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "dark",
+  async function handleDelete(e) {
+    if (userId === eventState.data.organizerId && userId !== "") {
+      const token = await authService.getAccessToken();
+      const response = fetch("api/Events/" + eventId, {
+        method: "DELETE",
+        headers: !token
+          ? { "Content-Type": "application/json" }
+          : {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
       });
-      setTimeout(() => {
+
+      if (response.ok) {
         navigate("/Events");
-      }, 2000);
+      } else {
+        //Tell user the event api is down
+        toast.error("🛑 Unable to contact Events API. 🛑", {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "dark",
+        });
+      }
     } else {
       //Tell user the event api is down
-      toast.error("🛑 Unable to contact Events API. 🛑", {
+      toast.error("🛑 You are not the organizer. 🛑", {
         position: "top-center",
         autoClose: 5000,
         hideProgressBar: false,
@@ -104,9 +111,26 @@ export default function EventDetails() {
         theme: "dark",
       });
     }
-  };
+  }
 
-  const applyClickHandler = async () => {
+  async function handleEdit(e) {
+    if (userId === eventState.data.organizerId && userId !== "") {
+      navigate("/Event/Edit/" + e);
+    } else {
+      toast.error("🛑 You are not the organizer. 🛑", {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+      });
+    }
+  }
+
+  async function handleApply() {
     const token = await authService.getAccessToken();
     const response = await fetch(`api/Events/Apply/${eventId}`, {
       method: "POST",
@@ -153,33 +177,33 @@ export default function EventDetails() {
             <Col sm={6}>
               {/* Participants */}
               <div id="game-short-description">
-                <p className="m-1"></p>
+                <p className="m-1">{event.participants}</p>
               </div>
             </Col>
           </Row>
           <Row>
             {userId !== "" && userId === eventState.data.organizerId && (
               <>
-                <Col sm={4}>
-                  <div class="track-game d-flex flex-column justify-content-around">
-                    <button onClick={deleteClickHandler}>Delete</button>
-                  </div>
-                </Col>
-                <Col sm={4}>
-                  <div class="track-game d-flex flex-column justify-content-around">
-                    <Link to={eventState.url}>
-                      <h6 class="text-center">Edit</h6>
-                    </Link>
-                  </div>
-                </Col>
+                <Button
+                  color="danger"
+                  onClick={(event) => handleDelete(event.id)}
+                >
+                  Delete
+                </Button>
+                <Link to={eventState.url}>
+                  <Button
+                    color="primary"
+                    onClick={(event) => handleEdit(event.id)}
+                  >
+                    Edit
+                  </Button>
+                </Link>
               </>
             )}
 
-            <Col sm={4}>
-              <div class="track-game d-flex flex-column justify-content-around">
-                <button onClick={applyClickHandler}>Apply</button>
-              </div>
-            </Col>
+            <Button color="primary" onClick={(event) => handleApply(event.id)}>
+              Apply
+            </Button>
           </Row>
         </Container>
       </>
