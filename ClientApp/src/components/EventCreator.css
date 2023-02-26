@@ -30,12 +30,12 @@
 
 @media (prefers-color-scheme: dark) {
   .select-search-container {
-    --select-search-background: #000;
+    --select-search-background: #fff;
     --select-search-border: #313244;
     --select-search-selected: #89b4fa;
-    --select-search-text: #fff;
+    --select-search-text: #000;
     --select-search-subtle-text: #a6adc8;
-    --select-search-highlight: #1e1e2e;
+    --select-search-highlight: #eff1f5;
   }
 }
 

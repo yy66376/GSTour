@@ -187,7 +187,6 @@ public class EventsController : Controller
         await _context.UserEvents.AddAsync(userEvent);
         await _context.SaveChangesAsync();
 
-        await _context.SaveChangesAsync();
         return Ok();
     }
 
