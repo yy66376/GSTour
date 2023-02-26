@@ -283,7 +283,7 @@ namespace GDTour.Migrations
 
                     b.HasIndex("GameId");
 
-                    b.ToTable("Alerts");
+                    b.ToTable("Alerts", (string)null);
                 });
 
             modelBuilder.Entity("GDTour.Models.Event", b =>
@@ -326,7 +326,7 @@ namespace GDTour.Migrations
 
                     b.HasIndex("OrganizerId");
 
-                    b.ToTable("Events");
+                    b.ToTable("Events", (string)null);
                 });
 
             modelBuilder.Entity("GDTour.Models.Game", b =>
@@ -382,7 +382,7 @@ namespace GDTour.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Games");
+                    b.ToTable("Games", (string)null);
                 });
 
             modelBuilder.Entity("GDTour.Models.Movie", b =>
@@ -409,7 +409,7 @@ namespace GDTour.Migrations
 
                     b.HasIndex("GameId");
 
-                    b.ToTable("Movies");
+                    b.ToTable("Movies", (string)null);
                 });
 
             modelBuilder.Entity("GDTour.Models.Screenshot", b =>
@@ -433,7 +433,7 @@ namespace GDTour.Migrations
 
                     b.HasIndex("GameId");
 
-                    b.ToTable("Screenshots");
+                    b.ToTable("Screenshots", (string)null);
                 });
 
             modelBuilder.Entity("GDTour.Models.UserEvent", b =>
@@ -457,7 +457,7 @@ namespace GDTour.Migrations
 
                     b.HasIndex("ParticipantId");
 
-                    b.ToTable("UserEvents");
+                    b.ToTable("UserEvents", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

@@ -74,6 +74,21 @@ public class EventsController : Controller
         };
     }
 
+    //GET: api/Events/Details/5
+
+    [HttpGet]
+    [Route("Details/{id}")]
+    public async Task<ActionResult<Event>> GetEventDetails(int id)
+    {
+        var ev = await _context.Events
+            .Include(ev => ev.Organizer)
+            .Include(ev => ev.Game)
+            .Include(ev => ev.UserEvents)
+            .FirstOrDefaultAsync(ev => ev.Id == id);
+
+        return ev;
+    }
+
     // GET: api/Events/5
     [HttpGet("{id}")]
     public async Task<ActionResult<EventDetailDTO>> GetEvent(int id)
@@ -112,13 +127,23 @@ public class EventsController : Controller
 
     // PUT: api/Events/5
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-    [HttpPut("{id}")]
-    public async Task<IActionResult> PutEvent(int id,[FromForm] Event ev)
+    [HttpPatch("{id}")]
+    [Authorize]
+    public async Task<IActionResult> PatchEvent(int id,[FromBody] EventEditorDTO @event)
     {
-        if (id != ev.Id)
+        Event Event = await _context.Events.FindAsync(id);
+        if (id != Event.Id)
             return BadRequest();
 
-        _context.Entry(ev).State = EntityState.Modified;
+        Event currentEvent = await _context.Events.FindAsync(id);
+        currentEvent.Name = @event.Name;
+        currentEvent.FirstRoundGameCount = @event.FirstRoundGameCount;
+        currentEvent.Location = @event.Location;
+        currentEvent.Date = @event.Date;
+        currentEvent.Description = @event.Description;
+        
+
+        //_context.Entry(ev).State = EntityState.Modified;
 
         try
         {
@@ -174,9 +199,17 @@ public class EventsController : Controller
     [Route("Apply/{id}")]
     public async Task<ActionResult> ApplyEvent(int id) 
     {
+
         var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
         var currentUser = await _userManager.FindByIdAsync(currentUserId);
         var currentEvent = await _context.Events.FindAsync(id);
+
+        var u = await _context.UserEvents.Where(ue => ue.ParticipantId == currentUserId).FirstOrDefaultAsync();
+
+        if(u != null)
+        {
+            return Ok();
+        }
 
         UserEvent userEvent = new UserEvent {
             ParticipantId = currentUserId,
@@ -186,25 +219,31 @@ public class EventsController : Controller
         };
         await _context.UserEvents.AddAsync(userEvent);
         await _context.SaveChangesAsync();
-
-        currentUser.UserEvents.Add(userEvent);
-        currentEvent.UserEvents.Add(userEvent);
-        currentEvent.Participants.Add(currentUser);
-        
-        await _context.SaveChangesAsync();
         return Ok();
     }
 
 
     // DELETE: api/Events/5
     [HttpDelete("{id}")]
+    [Authorize]
     public async Task<IActionResult> DeleteEvent(int id)
     {
+
         if (_context.Events == null)
             return NotFound();
         var Event = await _context.Events.FindAsync(id);
         if (Event == null)
             return NotFound();
+
+        var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+        if(currentUserId != Event.OrganizerId)
+        {
+            return Forbid();
+        }
+
+        var userEvents = await _context.UserEvents.Where(ue => ue.EventId == id).ToListAsync();
+
+        _context.UserEvents.RemoveRange(userEvents);
 
         _context.Events.Remove(Event);
         await _context.SaveChangesAsync();

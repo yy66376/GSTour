@@ -29,7 +29,9 @@ namespace GDTour.Models
         [System.Text.Json.Serialization.JsonIgnore]
         public GDTourUser Organizer { get; set; }
         [NotMapped]
+        [System.Text.Json.Serialization.JsonIgnore]
         public ICollection<GDTourUser> Participants { get; set; }
+        [System.Text.Json.Serialization.JsonIgnore]
         public ICollection<UserEvent> UserEvents { get; set; }
     }
 }
