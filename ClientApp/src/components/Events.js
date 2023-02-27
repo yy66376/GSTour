@@ -1,6 +1,5 @@
 ﻿import React, { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import Game from "./games/Game";
 import Event from "./events/Event";
 import { Container, Button } from "reactstrap";
 import ReactPaginate from "react-paginate";

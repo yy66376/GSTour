@@ -247,19 +247,21 @@ public class EventsController : Controller
     [Authorize]
     public async Task<IActionResult> DeleteEvent(int id)
     {
-        var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
 
-        var e = await _context.Events.FindAsync(id);
-        if (e == null)
+        var Event = await _context.Events.FindAsync(id);
+        var currentUser = await _context.GDTourUsers.FindAsync(Event.OrganizerId);
+        if (Event == null)
             return NotFound();
-        if (e.OrganizerId != currentUserId)
+        if (Event.OrganizerId != currentUser.Id)
+        {
             return Forbid();
+        }
 
         var userEvents = await _context.UserEvents.Where(ue => ue.EventId == id).ToListAsync();
 
         _context.UserEvents.RemoveRange(userEvents);
 
-        _context.Events.Remove(e);
+        _context.Events.Remove(Event);
         await _context.SaveChangesAsync();
 
         return NoContent();
