@@ -98,10 +98,10 @@ public class EventsController : Controller
             .Include(ev => ev.Game)
             .FirstOrDefaultAsync(ev => ev.Id == id);
 
-        var participants = _context.UserEvents.Where(ue => ue.EventId == id).Select(ue => ue.Participant);
-        string[] participantNames = new string[participants.Count()];
+        var participantsUserEvents = _context.UserEvents.Where(ue => ue.EventId == id).Select(ue => ue.Participant);
+        string[] participantNames = new string[participantsUserEvents.Count()];
         var x = 0;
-        foreach (var ue in participants) participantNames[x++] = ue.UserName;
+        foreach (var ue in participantsUserEvents) participantNames[x++] = ue.UserName;
 
         if (ev == null)
             return NotFound();
@@ -207,7 +207,7 @@ public class EventsController : Controller
 
         if(u != null)
         {
-            return Ok();
+            return BadRequest();
         }
 
         UserEvent userEvent = new UserEvent {
@@ -227,13 +227,10 @@ public class EventsController : Controller
     [Authorize]
     public async Task<IActionResult> DeleteEvent(int id)
     {
-        var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
 
-        var e = await _context.Events.FindAsync(id);
-        if (e == null)
+        var Event = await _context.Events.FindAsync(id);
+        if (Event == null)
             return NotFound();
-        if (e.OrganizerId != currentUserId)
-            return Forbid();
 
         var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
         if(currentUserId != Event.OrganizerId)
