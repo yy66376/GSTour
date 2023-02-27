@@ -141,6 +141,7 @@ export default function Events() {
           {events.map((g) => {
             return (
               <Event
+                key={g.id}
                 id={g.id}
                 name={g.name}
                 date={g.date}

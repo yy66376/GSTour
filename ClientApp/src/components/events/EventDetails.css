@@ -1,78 +1,67 @@
-﻿#game-short-description {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 1em;
-    border: 1px solid #8c8c8c;
-    border-radius: 5px;
-    background-color: rgba(42, 71, 94, 0.3);
-    height: 14vh;
+﻿#event-short-description,
+#event-participants {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 1em;
+  border: 1px solid #8c8c8c;
+  border-radius: 15px;
+  background-color: rgba(42, 71, 94, 0.3);
+  height: 14vh;
 }
 
-    #game-short-description p {
-        overflow-y: auto;
-    }
-
-
-.metacritic-reviews {
-    padding: 1em;
-    border: 1px solid #8c8c8c;
-    border-radius: 5px;
-    background-color: rgba(42, 71, 94, 0.3);
-    height: 14vh;
+#event-participants-list-container {
+  overflow-y: scroll;
 }
 
-.metascore:hover,
-.metascore:visited,
-.metascore:link,
-.metascore:active {
-    text-decoration: none;
+#event-participants-list-container::-webkit-scrollbar {
+  width: 8.5px;
 }
 
-.metascore div {
-    font-size: 2em;
-    height: 2em;
-    width: 2em;
-    color: white;
+#event-participants-list-container::-webkit-scrollbar-track {
+  background-color: transparent;
+  border-radius: 100px;
 }
 
-.metacritic-green {
-    border: 1px solid #07da74;
-    border-radius: 3px;
-    background-color: #07da74;
+#event-participants-list-container::-webkit-scrollbar-thumb {
+  background-color: #4b4842;
+  border-radius: 100px;
 }
 
-.metacritic-yellow {
-    border: 1px solid #fc3;
-    border-radius: 3px;
-    background-color: #fc3;
+#event-short-description p {
+  text-align: center;
+  overflow-y: auto;
 }
 
-.metacritic-red {
-    border: 1px solid #f00;
-    border-radius: 3px;
-    background-color: #f00;
+.event-edit,
+.event-delete,
+.event-apply {
+  padding: 1em;
+  border: 1px solid #8c8c8c;
+  border-radius: 15px;
+  background-color: rgba(42, 71, 94, 0.3);
+  height: 150px;
+  width: 150px;
+  flex-basis: 1;
+  cursor: pointer;
 }
 
-.metacritic-unknown {
-    border: 1px solid gray;
-    border-radius: 3px;
-    background-color: gray;
+.event-apply:hover h5 {
+  color: green;
 }
 
-.purchase-on-steam,
-.track-game {
-    cursor: pointer;
-    padding: 1em;
-    border: 1px solid #8c8c8c;
-    border-radius: 5px;
-    background-color: rgba(42, 71, 94, 0.3);
-    height: 14vh;
+.event-edit:hover h5 {
+  color: yellow;
 }
 
-#steam-purchase-link:link,
-#steam-purchase-link:hover,
-#steam-purchase-link:visited,
-#steam-purchase-link:active {
-    text-decoration: none;
+.event-delete:hover h5 {
+  color: red;
+}
+
+#event-participants-list {
+  list-style: none;
+}
+
+.event-no-participants-text {
+  font-size: 20px;
 }

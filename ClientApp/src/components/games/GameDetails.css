@@ -4,12 +4,13 @@
   justify-content: center;
   padding: 1em;
   border: 1px solid #8c8c8c;
-  border-radius: 5px;
+  border-radius: 15px;
   background-color: rgba(42, 71, 94, 0.3);
   height: 200px;
 }
 
 #game-short-description p {
+  text-align: center;
   overflow-y: auto;
 }
 
@@ -18,7 +19,7 @@
 .track-game {
   padding: 1em;
   border: 1px solid #8c8c8c;
-  border-radius: 5px;
+  border-radius: 15px;
   background-color: rgba(42, 71, 94, 0.3);
   height: 150px;
 }

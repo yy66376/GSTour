@@ -1,9 +1,12 @@
 ﻿import React, { useState } from "react";
-import { Col, Container, Row, Form, Label, Input, Button } from "reactstrap";
+import { Form, Label, Input, Button, FormGroup, FormText } from "reactstrap";
 import { useNavigate } from "react-router-dom";
 import authService from "./api-authorization/AuthorizeService";
 import SelectSearch from "react-select-search";
 import "./EventCreator.css";
+import { toast } from "react-toastify";
+
+const minLen = 2;
 
 export default function EventCreator() {
   const navigate = useNavigate();
@@ -13,10 +16,15 @@ export default function EventCreator() {
     location: "",
     description: "",
     gameId: "",
-    FirstRoundGameCount: "",
+    FirstRoundGameCount: "4",
   });
 
   const getGames = async (searchQuery) => {
+    // Do not search if the search query is too short. Will overload server
+    if (searchQuery.length <= minLen) {
+      return;
+    }
+
     const response = await fetch(`/api/Games/SearchAll?q=${searchQuery}`);
     if (response.ok) {
       const games = await response.json();
@@ -29,6 +37,16 @@ export default function EventCreator() {
       return [];
     } else {
       // tell user that the games API is down
+      toast.error("🛑 Cannot contact games API to search for games. 🛑", {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+      });
     }
   };
 
@@ -51,16 +69,26 @@ export default function EventCreator() {
       navigate("/Events");
     } else {
       // tell user that the events API is down
+      toast.error("🛑 Cannot contact Events API to create Event. 🛑", {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+      });
     }
   };
 
-  function handle(e) {
+  const handleChange = (e) => {
     setData((data) => {
       const newData = { ...data };
       newData[e.target.name] = e.target.value;
       return newData;
     });
-  }
+  };
 
   const changeGameHandler = (newGameId) => {
     setData((data) => {
@@ -74,8 +102,6 @@ export default function EventCreator() {
       height: "75%",
       "border-radius": "5px",
     };
-
-    console.dir(option);
 
     return (
       <button {...props} className={className} type="button">
@@ -97,100 +123,109 @@ export default function EventCreator() {
   };
 
   return (
-    <Container>
-      <Row>
-        <Col sm={3}></Col>
-        <Col sm={6}>
-          <Form
-            id="event-create-form"
-            action="/api/Events"
-            onSubmit={handleSubmit}
+    <>
+      <h1 className="text-center mb-4">Create an event</h1>
+      <img
+        className="img-fluid m-auto d-block"
+        style={{ height: "150px" }}
+        src={process.env.PUBLIC_URL + "/images/trophy.png"}
+        alt="Trophy"
+      />
+      <Form id="event-create-form" action="/api/Events" onSubmit={handleSubmit}>
+        <FormGroup>
+          <Label for="event-name-input">Name:</Label>
+          <Input
+            id="event-name-input"
+            onChange={handleChange}
+            value={data.name}
+            type="text"
+            name="name"
+            placeholder="Enter the event name..."
+          />
+          <FormText>Give your event a cool name!</FormText>
+        </FormGroup>
+        <FormGroup>
+          <Label for="event-game-input">Game:</Label>
+          <SelectSearch
+            getOptions={getGames}
+            search
+            placeholder="Select a game"
+            onChange={changeGameHandler}
+            renderOption={renderGameOption}
+          />
+          <FormText>Select a game from our catalogue.</FormText>
+        </FormGroup>
+        <FormGroup>
+          <Label for="event-date-input">Date:</Label>
+          <Input
+            id="event-date-input"
+            onChange={handleChange}
+            value={data.date}
+            type="datetime-local"
+            name="date"
+          />
+          <FormText>Pick a date for this event.</FormText>
+        </FormGroup>
+        <FormGroup>
+          <Label for="event-location-input">Location:</Label>
+          <Input
+            id="event-location-input"
+            onChange={handleChange}
+            value={data.location}
+            type="text"
+            name="location"
+            placeholder="Enter Location or Online"
+          />
+          <FormText>Pick a location for this event.</FormText>
+        </FormGroup>
+        <FormGroup>
+          <Label for="event-description-input">Description:</Label>
+          <Input
+            id="event-description-input"
+            onChange={handleChange}
+            value={data.description}
+            type="text"
+            name="description"
+            placeholder="Add the details of the event..."
+          />
+          <FormText>Give your event a short description.</FormText>
+        </FormGroup>
+        <FormGroup>
+          <Label for="event-number-of-games-input">
+            Number of Participants/Teams:
+          </Label>
+          <Input
+            id="event-number-of-games-input"
+            onChange={handleChange}
+            value={data.FirstRoundGameCount}
+            type="select"
+            name="FirstRoundGameCount"
           >
-            <Container>
-              <Row>
-                <Label for="event-name-input">Name:</Label>
-                <Input
-                  id="event-name-input"
-                  onChange={(e) => handle(e)}
-                  value={data.name}
-                  type="text"
-                  name="name"
-                  placeholder="Enter the event name..."
-                />
-              </Row>
-              <Row>
-                <Label for="event-game-input">Game:</Label>
-                <SelectSearch
-                  getOptions={getGames}
-                  search
-                  placeholder="Select a game"
-                  onChange={changeGameHandler}
-                  renderOption={renderGameOption}
-                />
-              </Row>
-              <Row>
-                <Label for="event-date-input">Date:</Label>
-                <Input
-                  id="event-date-input"
-                  onChange={(e) => handle(e)}
-                  value={data.date}
-                  type="datetime-local"
-                  name="date"
-                />
-              </Row>
-              <Row>
-                <Label for="event-location-input">Location:</Label>
-                <Input
-                  id="event-location-input"
-                  onChange={(e) => handle(e)}
-                  value={data.location}
-                  type="text"
-                  name="location"
-                  placeholder="Enter Location or Online"
-                />
-              </Row>
-              <Row>
-                <Label for="event-location-input">Description:</Label>
-                <Input
-                  id="event-location-input"
-                  onChange={(e) => handle(e)}
-                  value={data.description}
-                  type="text"
-                  name="description"
-                  placeholder="Add the details of the event..."
-                />
-              </Row>
-              <Row>
-                <Label for="event-number-of-games-input">
-                  Number of Games:
-                </Label>
-                <Input
-                  id="event-number-of-games-input"
-                  onChange={(e) => handle(e)}
-                  value={data.FirstRoundGameCount}
-                  type="number"
-                  name="FirstRoundGameCount"
-                />
-              </Row>
-            </Container>
+            <option value="4">4</option>
+            <option value="8">8</option>
+            <option value="16">16</option>
+            <option value="32">32</option>
+          </Input>
+          <FormText>
+            Choose the number of players/teams that will play in this event.
+            Must be a power of 2.
+          </FormText>
+        </FormGroup>
 
-            <div className="event-actions mt-3 d-flex justify-content-end">
-              <Button
-                className="me-3"
-                color="primary"
-                type="submit"
-                form="event-create-form"
-              >
-                Submit
-              </Button>
-              <Button color="secondary" onClick={cancelClickHandler}>
-                Cancel
-              </Button>
-            </div>
-          </Form>
-        </Col>
-        <Col sm={3}></Col>
-      </Row>
-    </Container>
+        <div className="event-actions mt-3 d-flex justify-content-end">
+          <Button
+            className="me-3"
+            color="primary"
+            type="submit"
+            form="event-create-form"
+          >
+            Submit
+          </Button>
+          <Button color="secondary" onClick={cancelClickHandler}>
+            Cancel
+          </Button>
+        </div>
+      </Form>
+    </>
   );
 }
