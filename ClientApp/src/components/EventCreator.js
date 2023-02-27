@@ -97,9 +97,9 @@ export default function EventCreator() {
           Number(convertMonthToInt(d.toDateString().substring(4, 7))) &&
         Number(data.date.substring(8, 10)) >
           Number(d.toDateString().substring(8, 10))) ||
-      (Number(data.date.substring(0, 4)) >=
+      (Number(data.date.substring(0, 4)) >
         Number(d.toDateString().substring(11, 15)) &&
-        Number(data.date.substring(5, 7)) >=
+        Number(data.date.substring(5, 7)) >
           Number(convertMonthToInt(d.toDateString().substring(4, 7))))
     ) {
       const token = await authService.getAccessToken();

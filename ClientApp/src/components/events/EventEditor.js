@@ -122,9 +122,9 @@ export default function EventEditor() {
           Number(convertMonthToInt(d.toDateString().substring(4, 7))) &&
         Number(eventState.data.date.substring(8, 10)) >
           Number(d.toDateString().substring(8, 10))) ||
-      (Number(eventState.data.date.substring(0, 4)) >=
+      (Number(eventState.data.date.substring(0, 4)) >
         Number(d.toDateString().substring(11, 15)) &&
-        Number(eventState.data.date.substring(5, 7)) >=
+        Number(eventState.data.date.substring(5, 7)) >
           Number(convertMonthToInt(d.toDateString().substring(4, 7))))
     ) {
       const response = fetch("/api/Events/" + eventId, {
