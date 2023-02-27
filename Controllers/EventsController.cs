@@ -216,7 +216,7 @@ public class EventsController : Controller
         if (numParticipants >= currentEvent.FirstRoundGameCount)
             return BadRequest("EventCapacityExceededError");
 
-        var u = await _context.UserEvents.Where(ue => ue.ParticipantId == currentUserId).FirstOrDefaultAsync();
+        var u = await _context.UserEvents.Where(ue => ue.ParticipantId == currentUserId && ue.EventId==currentEvent.Id).FirstOrDefaultAsync();
 
         if (u != null) return BadRequest("EventAlreadyAppliedError");
 
@@ -238,12 +238,12 @@ public class EventsController : Controller
     [Authorize]
     public async Task<IActionResult> DeleteEvent(int id)
     {
-
+        
         var Event = await _context.Events.FindAsync(id);
+        var currentUser = await _context.GDTourUsers.FindAsync(Event.OrganizerId);
         if (Event == null)
             return NotFound();
-        if (e.OrganizerId != currentUserId)
-            return Forbid();
+        if (Event.OrganizerId != currentUser.Id) {
             return Forbid();
         }
 
@@ -251,7 +251,7 @@ public class EventsController : Controller
 
         _context.UserEvents.RemoveRange(userEvents);
 
-        _context.Events.Remove(e);
+        _context.Events.Remove(Event);
         await _context.SaveChangesAsync();
 
         return NoContent();

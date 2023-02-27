@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import MatchModal from "./MatchModal";
+import authService from "../api-authorization/AuthorizeService";
 
 export default function EventBracket({ event, manager }) {
   const [matchModal, setMatchModal] = useState(false);
@@ -7,9 +8,12 @@ export default function EventBracket({ event, manager }) {
   const [matchId, setMatchId] = useState(-1);
   const [opponent1Name, setOpponent1Name] = useState("");
   const [opponent2Name, setOpponent2Name] = useState("");
+  const [userId, setUserId] = useState("");
 
   const showMatchModal = () => {
-    setMatchModal(true);
+    if (userId === event.organizerId) {
+      setMatchModal(true);
+    }
   };
 
   const hideMatchModal = () => {
@@ -36,9 +40,17 @@ export default function EventBracket({ event, manager }) {
       });
 
       const data = manager.get.storage.data;
+
       renderBracket(data);
     };
 
+    const populateUser = async () => {
+      if (await authService.isAuthenticated()) {
+        setUserId((await authService.getUser()).sub);
+      }
+    };
+
+    populateUser();
     render();
   }, [event.name, event.id, event.participants, manager]);
 

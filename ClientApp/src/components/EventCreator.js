@@ -50,26 +50,88 @@ export default function EventCreator() {
     }
   };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+  function convertMonthToInt(month) {
+    month = month.toString();
+    switch (month) {
+      case "Jan":
+        return 1;
+      case "Feb":
+        return 2;
+      case "Mar":
+        return 3;
+      case "Apr":
+        return 4;
+      case "May":
+        return 5;
+      case "Jun":
+        return 6;
+      case "Jul":
+        return 7;
+      case "Aug":
+        return 8;
+      case "Sep":
+        return 9;
+      case "Oct":
+        return 10;
+      case "Nov":
+        return 11;
+      case "Dec":
+        return 12;
+      default:
+        return 0;
+    }
+  }
 
-        const token = await authService.getAccessToken();
-        const response = await fetch("/api/Events", {
-            method: "POST",
-            headers: !token
-                ? { "Content-Type": "application/json" }
-                : {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-            body: JSON.stringify(data),
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    var d = new Date();
+    console.log(data.date);
+    console.log(Number(data.date.substring(5, 7)));
+    console.log(Number(convertMonthToInt(d.toDateString().substring(4, 7))));
+
+    if (
+      (Number(data.date.substring(0, 4)) >=
+        Number(d.toDateString().substring(11, 15)) &&
+        Number(data.date.substring(5, 7)) >=
+          Number(convertMonthToInt(d.toDateString().substring(4, 7))) &&
+        Number(data.date.substring(8, 10)) >
+          Number(d.toDateString().substring(8, 10))) ||
+      (Number(data.date.substring(0, 4)) >=
+        Number(d.toDateString().substring(11, 15)) &&
+        Number(data.date.substring(5, 7)) >=
+          Number(convertMonthToInt(d.toDateString().substring(4, 7))))
+    ) {
+      const token = await authService.getAccessToken();
+      const response = await fetch("/api/Events", {
+        method: "POST",
+        headers: !token
+          ? { "Content-Type": "application/json" }
+          : {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+        body: JSON.stringify(data),
+      });
+
+      if (response.ok) {
+        navigate("/Events");
+      } else {
+        // tell user that the events API is down
+        toast.error("🛑 Cannot contact Events API to create Event. 🛑", {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "dark",
         });
-
-    if (response.ok) {
-      navigate("/Events");
+      }
     } else {
-      // tell user that the events API is down
-      toast.error("🛑 Cannot contact Events API to create Event. 🛑", {
+      // tell user that they entered an incorrect date
+      toast.error("🛑 Date must after today 🛑", {
         position: "top-center",
         autoClose: 5000,
         hideProgressBar: false,
@@ -90,18 +152,18 @@ export default function EventCreator() {
     });
   };
 
-    const changeGameHandler = (newGameId) => {
-        setData((data) => {
-            return { ...data, gameId: newGameId };
-        });
-    };
+  const changeGameHandler = (newGameId) => {
+    setData((data) => {
+      return { ...data, gameId: newGameId };
+    });
+  };
 
-    const renderGameOption = (props, option, snapshot, className) => {
-        const imgStyle = {
-            marginRight: 15,
-            height: "75%",
-            "border-radius": "5px",
-        };
+  const renderGameOption = (props, option, snapshot, className) => {
+    const imgStyle = {
+      marginRight: 15,
+      height: "75%",
+      "border-radius": "5px",
+    };
 
     return (
       <button {...props} className={className} type="button">
@@ -118,9 +180,9 @@ export default function EventCreator() {
     );
   };
 
-    const cancelClickHandler = () => {
-        navigate("/Events");
-    };
+  const cancelClickHandler = () => {
+    navigate("/Events");
+  };
 
   return (
     <>
