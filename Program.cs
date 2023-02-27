@@ -121,6 +121,7 @@ app.UseAuthorization();
 app.MapControllerRoute("default", "{controller}/{action=Index}/{id?}");
 app.MapRazorPages();
 app.MapHub<NotificationHub>("/hubs/notifications");
+app.MapHub<BracketHub>("/hubs/brackets");
 
 app.MapFallbackToFile("index.html");
 

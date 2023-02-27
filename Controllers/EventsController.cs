@@ -2,6 +2,8 @@
 using Duende.IdentityServer.Extensions;
 using GDTour.Areas.Identity.Data;
 using GDTour.Data;
+using GDTour.Hubs;
+using GDTour.Hubs.Clients;
 using GDTour.Models;
 using GDTour.Models.Utility;
 using GDTour.Services.Steam;
@@ -9,6 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.CodeAnalysis.Elfie.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -26,12 +29,15 @@ public class EventsController : Controller
 {
     private readonly GDTourContext _context;
     private readonly UserManager<GDTourUser> _userManager;
+    private readonly IHubContext<BracketHub, IBracketClient> _bracketHub;
     private const int SearchResultLimit = 7;
 
-    public EventsController(GDTourContext context, UserManager<GDTourUser> userManager)
+    public EventsController(GDTourContext context, UserManager<GDTourUser> userManager,
+        IHubContext<BracketHub, IBracketClient> bracketHub)
     {
         _context = context;
         _userManager = userManager;
+        _bracketHub = bracketHub;
     }
 
     // GET: api/Events
@@ -68,8 +74,9 @@ public class EventsController : Controller
                 Description = ev.Description,
                 Location = ev.Location,
                 OrganizerId = ev.OrganizerId,
-                OrganizerName = ev.Organizer.UserName,
-                HeaderImageUrl = ev.Game.HeaderImageUrl
+                OrganizerName = $"{ev.Organizer.FirstName} {ev.Organizer.LastName} ({ev.Organizer.UserName})",
+                HeaderImageUrl = ev.Game.HeaderImageUrl,
+                FirstRoundGameCount = ev.FirstRoundGameCount
             }).ToArray()
         };
     }
@@ -105,11 +112,8 @@ public class EventsController : Controller
         var participantNames = participants.Select(ue =>
         {
             var participant = ue.Participant;
-            return $"{participant.FirstName} {participant.LastName}";
+            return $"{participant.FirstName} {participant.LastName} ({participant.UserName})";
         }).ToArray();
-        //string[] participantNames = new string[participants.Count()];
-        //var x = 0;
-        //foreach (var ue in participants) participantNames[x++] = ue.UserName;
 
         if (ev == null)
             return NotFound();
@@ -127,6 +131,7 @@ public class EventsController : Controller
             OrganizerName = $"{ev.Organizer.FirstName} {ev.Organizer.LastName}",
             GameId = ev.GameId,
             HeaderImageUrl = ev.Game.HeaderImageUrl,
+            BracketJson = ev.BracketJson,
             Participants = participantNames
         };
     }
@@ -216,7 +221,8 @@ public class EventsController : Controller
         if (numParticipants >= currentEvent.FirstRoundGameCount)
             return BadRequest("EventCapacityExceededError");
 
-        var u = await _context.UserEvents.Where(ue => ue.ParticipantId == currentUserId).FirstOrDefaultAsync();
+        var u = await _context.UserEvents
+            .Where(ue => ue.ParticipantId == currentUserId && ue.EventId == currentEvent.Id).FirstOrDefaultAsync();
 
         if (u != null) return BadRequest("EventAlreadyAppliedError");
 
@@ -229,6 +235,9 @@ public class EventsController : Controller
         };
         await _context.UserEvents.AddAsync(userEvent);
         await _context.SaveChangesAsync();
+
+        await _bracketHub.Clients.All.ReceiveParticipant(
+            $"{currentUser.FirstName} {currentUser.LastName} ({currentUser.UserName})");
         return Ok();
     }
 
@@ -253,6 +262,23 @@ public class EventsController : Controller
         _context.Events.Remove(e);
         await _context.SaveChangesAsync();
 
+        return NoContent();
+    }
+
+    [HttpPatch("{id}/Bracket")]
+    [Authorize]
+    public async Task<IActionResult> UpdateBracket(int id, EventBracketDTO eventBracket)
+    {
+        var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+        var currentEvent = await _context.Events.FindAsync(id);
+        if (currentEvent == null)
+            return NotFound("EventDoesNotExistError");
+        if (currentEvent.OrganizerId != currentUserId) return Forbid("NotOrganizerModifyError");
+
+        currentEvent.BracketJson = eventBracket.BracketJson;
+        await _context.SaveChangesAsync();
+
+        await _bracketHub.Clients.All.ReceiveBracket(eventBracket.BracketJson);
         return NoContent();
     }
 

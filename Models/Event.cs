@@ -19,6 +19,7 @@ public class Event
     public string? Location { get; set; }
     public int ParticipantsPerGame { get; set; }
     public int FirstRoundGameCount { get; set; }
+    public string? BracketJson { get; set; } = null;
 
     // Navigational Properties
     [System.Text.Json.Serialization.JsonIgnore]

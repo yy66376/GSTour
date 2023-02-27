@@ -221,6 +221,18 @@ export default function EventDetails() {
       : "justify-content-center";
   };
 
+  const handleNewParticipant = (participantName) => {
+    setEventState((prev) => {
+      return {
+        ...prev,
+        data: {
+          ...prev.data,
+          participants: [...prev.data.participants, participantName],
+        },
+      };
+    });
+  };
+
   // const storage = new JsonDatabase();
   const storage = new InMemoryDatabase();
   const manager = new BracketsManager(storage);
@@ -302,7 +314,13 @@ export default function EventDetails() {
           </Row>
         </Container>
 
-        <EventBracket event={event} manager={manager} />
+        {event.firstRoundGameCount === event.participants.length && (
+          <EventBracket
+            event={event}
+            manager={manager}
+            onNewParticipant={handleNewParticipant}
+          />
+        )}
       </>
     );
   };

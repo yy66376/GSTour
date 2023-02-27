@@ -149,6 +149,7 @@ export default function Events() {
                 game={g.game}
                 organizerName={g.organizerName}
                 headerImageUrl={g.headerImageUrl}
+                firstRoundGameCount={g.firstRoundGameCount}
               />
             );
           })}
