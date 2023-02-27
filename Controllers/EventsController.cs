@@ -98,10 +98,18 @@ public class EventsController : Controller
             .Include(ev => ev.Game)
             .FirstOrDefaultAsync(ev => ev.Id == id);
 
-        var participantsUserEvents = _context.UserEvents.Where(ue => ue.EventId == id).Select(ue => ue.Participant);
-        string[] participantNames = new string[participantsUserEvents.Count()];
-        var x = 0;
-        foreach (var ue in participantsUserEvents) participantNames[x++] = ue.UserName;
+        var participants = await _context.UserEvents
+            .Where(ue => ue.EventId == id)
+            .Include(ue => ue.Participant)
+            .ToListAsync();
+        var participantNames = participants.Select(ue =>
+        {
+            var participant = ue.Participant;
+            return $"{participant.FirstName} {participant.LastName}";
+        }).ToArray();
+        //string[] participantNames = new string[participants.Count()];
+        //var x = 0;
+        //foreach (var ue in participants) participantNames[x++] = ue.UserName;
 
         if (ev == null)
             return NotFound();
@@ -116,6 +124,7 @@ public class EventsController : Controller
             ParticipantsPerGame = ev.ParticipantsPerGame,
             FirstRoundGameCount = ev.FirstRoundGameCount,
             OrganizerId = ev.OrganizerId,
+            OrganizerName = $"{ev.Organizer.FirstName} {ev.Organizer.LastName}",
             GameId = ev.GameId,
             HeaderImageUrl = ev.Game.HeaderImageUrl,
             Participants = participantNames
@@ -126,19 +135,19 @@ public class EventsController : Controller
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPatch("{id}")]
     [Authorize]
-    public async Task<IActionResult> PatchEvent(int id,[FromBody] EventEditorDTO @event)
+    public async Task<IActionResult> PatchEvent(int id, [FromBody] EventEditorDTO @event)
     {
-        Event Event = await _context.Events.FindAsync(id);
+        var Event = await _context.Events.FindAsync(id);
         if (id != Event.Id)
             return BadRequest();
 
-        Event currentEvent = await _context.Events.FindAsync(id);
+        var currentEvent = await _context.Events.FindAsync(id);
         currentEvent.Name = @event.Name;
         currentEvent.FirstRoundGameCount = @event.FirstRoundGameCount;
         currentEvent.Location = @event.Location;
         currentEvent.Date = @event.Date;
         currentEvent.Description = @event.Description;
-        
+
 
         //_context.Entry(ev).State = EntityState.Modified;
 
@@ -198,19 +207,21 @@ public class EventsController : Controller
     [Route("Apply/{id}")]
     public async Task<ActionResult> ApplyEvent(int id)
     {
-
         var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
         var currentUser = await _userManager.FindByIdAsync(currentUserId);
         var currentEvent = await _context.Events.FindAsync(id);
+        var numParticipants = await _context.UserEvents.Where(ue => ue.EventId == id).CountAsync();
+
+        if (currentEvent == null) return BadRequest("EventDoesNotExistError");
+        if (numParticipants >= currentEvent.FirstRoundGameCount)
+            return BadRequest("EventCapacityExceededError");
 
         var u = await _context.UserEvents.Where(ue => ue.ParticipantId == currentUserId).FirstOrDefaultAsync();
 
-        if(u != null)
-        {
-            return BadRequest();
-        }
+        if (u != null) return BadRequest("EventAlreadyAppliedError");
 
-        UserEvent userEvent = new UserEvent {
+        var userEvent = new UserEvent
+        {
             ParticipantId = currentUserId,
             Participant = currentUser,
             EventId = id,
@@ -231,10 +242,8 @@ public class EventsController : Controller
         var Event = await _context.Events.FindAsync(id);
         if (Event == null)
             return NotFound();
-
-        var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
-        if(currentUserId != Event.OrganizerId)
-        {
+        if (e.OrganizerId != currentUserId)
+            return Forbid();
             return Forbid();
         }
 
@@ -242,7 +251,7 @@ public class EventsController : Controller
 
         _context.UserEvents.RemoveRange(userEvents);
 
-        _context.Events.Remove(Event);
+        _context.Events.Remove(e);
         await _context.SaveChangesAsync();
 
         return NoContent();

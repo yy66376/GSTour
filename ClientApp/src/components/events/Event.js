@@ -3,18 +3,31 @@ import {
   Controller,
   CalendarFill,
   PersonFill,
-  MapFill,
+  GeoAltFill,
+  PeopleFill,
 } from "react-bootstrap-icons";
 
 import "./Event.css";
 import { Link } from "react-router-dom";
 
 export default function Event(props) {
-  const { id, name, date, location, organizerName, headerImageUrl } = props;
+  const {
+    id,
+    name,
+    date,
+    location,
+    organizerName,
+    headerImageUrl,
+    firstRoundGameCount,
+  } = props;
 
   let dateFormatted = "Unknown";
   if (date !== null) {
-    dateFormatted = date.toString();
+    dateFormatted = new Date(date).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
   }
 
   return (
@@ -30,7 +43,7 @@ export default function Event(props) {
             />
           </Col>
 
-          {/* Column for game name, release date, and platforms */}
+          {/* Column for evemt name, organizer, event date, location, and max number of participants/teams */}
           <Col sm={5}>
             {/* Event name */}
             <h5 className="mt-3">{name}</h5>
@@ -49,8 +62,14 @@ export default function Event(props) {
 
             {/* Location */}
             <p className="mt-2">
-              <MapFill className="me-2" />
+              <GeoAltFill className="me-2" />
               Location: {location}
+            </p>
+
+            {/* Max number of aprticipants/teams */}
+            <p className="mt-2">
+              <PeopleFill className="me-2" />
+              Number of Participants/Teams: {firstRoundGameCount}
             </p>
           </Col>
         </Row>

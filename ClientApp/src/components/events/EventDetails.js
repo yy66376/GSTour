@@ -6,7 +6,16 @@ import "./EventDetails.css";
 import { useNavigate } from "react-router-dom";
 import authService from "../api-authorization/AuthorizeService";
 import { toast } from "react-toastify";
-import { Bracket, RoundProps } from "react-brackets";
+import {
+  Clipboard2CheckFill,
+  PencilSquare,
+  Trash3Fill,
+} from "react-bootstrap-icons";
+import EventParticipant from "./EventParticipant";
+// import JsonDatabase from "brackets-json-db";
+import { InMemoryDatabase } from "brackets-memory-db";
+import { BracketsManager } from "brackets-manager";
+import EventBracket from "./EventBracket";
 
 export default function EventDetails() {
   const navigate = useNavigate();
@@ -24,18 +33,6 @@ export default function EventDetails() {
     let data = null;
     if (response.ok) {
       data = await response.json();
-    } else {
-      // tell user that event api is down
-      toast.error("🛑 Unable to contact Events API. 🛑", {
-        position: "top-center",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "dark",
-      });
     }
     return data;
   };
@@ -77,10 +74,15 @@ export default function EventDetails() {
   // load event detail when component updates
   useEffect(() => {
     const populateEventData = async () => {
-      const gameResponse = await fetchEventDetails(eventId);
-      if (gameResponse !== null) {
-        var temp = eventState.url + eventId;
-        setEventState({ data: gameResponse, loading: false, url: temp });
+      const response = await fetchEventDetails(eventId);
+      if (response !== null) {
+        setEventState((prev) => {
+          return {
+            data: response,
+            loading: false,
+            url: prev.url + eventId,
+          };
+        });
       } else {
         // tell user that event details api is down
         toast.error("🛑 Unable to contact Events API. 🛑", {
@@ -119,7 +121,19 @@ export default function EventDetails() {
       });
 
       if (response.ok) {
-        navigate("/Events");
+        toast.success("✅ Event succesfully deleted. ✅", {
+          position: "top-center",
+          autoClose: 500,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "dark",
+        });
+        setTimeout(() => {
+          navigate("/Events");
+        }, 1500);
       } else {
         //Tell user the event api is down
         toast.error("🛑 Unable to contact Events API. 🛑", {
@@ -148,9 +162,9 @@ export default function EventDetails() {
     }
   }
 
-  async function handleEdit(e) {
+  function handleEdit(e) {
     if (userId === eventState.data.organizerId && userId !== "") {
-      navigate("/Event/Edit/" + e);
+      navigate(`/Events/Edit/${eventId}`);
     } else {
       toast.error("🛑 You are not the organizer. 🛑", {
         position: "top-center",
@@ -173,16 +187,54 @@ export default function EventDetails() {
     });
 
     if (!response.ok) {
-      toast.error("🛑 Unable to contact Events API. Unable to apply 🛑", {
-        position: "top-center",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "dark",
-      });
+      if (response.status === 400) {
+        const errorText = await response.text();
+        if (errorText === "EventAlreadyAppliedError")
+          toast.error("🛑 You have already applied to this event. 🛑", {
+            position: "top-center",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "dark",
+          });
+        else if (errorText === "EventDoesNotExist") {
+          toast.error("🛑 The event does not exist. 🛑", {
+            position: "top-center",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "dark",
+          });
+        } else if (errorText === "EventCapacityExceededError") {
+          toast.error("🛑 The event capacity is already full. 🛑", {
+            position: "top-center",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "dark",
+          });
+        }
+      } else {
+        toast.error("🛑 Unable to contact Events API. Unable to apply 🛑", {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "dark",
+        });
+      }
     } else {
       toast.success(`✅ You have successfully applied to this event ✅`, {
         position: "top-center",
@@ -197,639 +249,94 @@ export default function EventDetails() {
     }
   }
 
-  function createRounds() {
-    console.log(eventState.data);
-    var rounds;
+  const eventActionClass = () => {
+    return userId !== "" && userId === eventState.data.organizerId
+      ? "justify-content-between"
+      : "justify-content-center";
+  };
 
-    switch (eventState.data.firstRoundGameCount) {
-      case 4:
-        rounds = [
-          {
-            title: "Round one",
-            seeds: [
-              {
-                id: 1,
-                date: eventState.data.date,
-                teams: [
-                  { name: eventState.data.participants[0] },
-                  { name: eventState.data.participants[1] },
-                ],
-              },
-              {
-                id: 2,
-                date: eventState.data.date,
-                teams: [
-                  { name: eventState.data.participants[2] },
-                  { name: eventState.data.participants[3] },
-                ],
-              },
-            ],
-          },
-          {
-            title: "Finals",
-            seeds: [
-              {
-                id: 3,
-                date: eventState.data.date,
-                teams: [
-                  { name: "Winner of Game 1" },
-                  { name: "Winner of Game 2" },
-                ],
-              },
-            ],
-          },
-        ];
-        break;
-      case 8:
-        rounds = [
-          {
-            title: "Round One",
-            seeds: [
-              {
-                id: 1,
-                date: eventState.data.date,
-                teams: [
-                  { name: eventState.data.participants[0] },
-                  { name: eventState.data.participants[1] },
-                ],
-              },
-              {
-                id: 2,
-                date: eventState.data.date,
-                teams: [
-                  { name: eventState.data.participants[2] },
-                  { name: eventState.data.participants[3] },
-                ],
-              },
-              {
-                id: 3,
-                date: eventState.data.date,
-                teams: [
-                  { name: eventState.data.participants[4] },
-                  { name: eventState.data.participants[5] },
-                ],
-              },
-              {
-                id: 4,
-                date: eventState.data.date,
-                teams: [
-                  { name: eventState.data.participants[6] },
-                  { name: eventState.data.participants[7] },
-                ],
-              },
-            ],
-          },
-          {
-            title: "Semifinals",
-            seeds: [
-              {
-                id: 5,
-                date: eventState.data.date,
-                teams: [
-                  { name: "Winner of Game 1" },
-                  { name: "Winner of Game 2" },
-                ],
-              },
-              {
-                id: 6,
-                date: eventState.data.date,
-                teams: [
-                  { name: "Winner of Game 3" },
-                  { name: "Winner of Game 4" },
-                ],
-              },
-            ],
-          },
-          {
-            title: "Finals",
-            seeds: [
-              {
-                id: 3,
-                date: eventState.data.date,
-                teams: [
-                  { name: "Winner of Semifinals 1" },
-                  { name: "Winner of Semifinals 2" },
-                ],
-              },
-            ],
-          },
-        ];
-        break;
-      case 16:
-        rounds = [
-          {
-            title: "Round One",
-            seeds: [
-              {
-                id: 1,
-                date: eventState.data.date,
-                teams: [
-                  { name: eventState.data.participants[0] },
-                  { name: eventState.data.participants[1] },
-                ],
-              },
-              {
-                id: 2,
-                date: eventState.data.date,
-                teams: [
-                  { name: eventState.data.participants[2] },
-                  { name: eventState.data.participants[3] },
-                ],
-              },
-              {
-                id: 3,
-                date: eventState.data.date,
-                teams: [
-                  { name: eventState.data.participants[4] },
-                  { name: eventState.data.participants[5] },
-                ],
-              },
-              {
-                id: 4,
-                date: eventState.data.date,
-                teams: [
-                  { name: eventState.data.participants[6] },
-                  { name: eventState.data.participants[7] },
-                ],
-              },
-              {
-                id: 5,
-                date: eventState.data.date,
-                teams: [
-                  { name: eventState.data.participants[8] },
-                  { name: eventState.data.participants[9] },
-                ],
-              },
-              {
-                id: 6,
-                date: eventState.data.date,
-                teams: [
-                  { name: eventState.data.participants[10] },
-                  { name: eventState.data.participants[11] },
-                ],
-              },
-              {
-                id: 7,
-                date: eventState.data.date,
-                teams: [
-                  { name: eventState.data.participants[12] },
-                  { name: eventState.data.participants[13] },
-                ],
-              },
-              {
-                id: 8,
-                date: eventState.data.date,
-                teams: [
-                  { name: eventState.data.participants[14] },
-                  { name: eventState.data.participants[15] },
-                ],
-              },
-            ],
-          },
-          {
-            title: "Round Two",
-            seeds: [
-              {
-                id: 1,
-                date: eventState.data.date,
-                teams: [
-                  { name: "Winner of Game 1" },
-                  { name: "Winner of Game 2" },
-                ],
-              },
-              {
-                id: 2,
-                date: eventState.data.date,
-                teams: [
-                  { name: "Winner of Game 3" },
-                  { name: "Winner of Game 4" },
-                ],
-              },
-              {
-                id: 3,
-                date: eventState.data.date,
-                teams: [
-                  { name: "Winner of Game 5" },
-                  { name: "Winner of Game 6" },
-                ],
-              },
-              {
-                id: 4,
-                date: eventState.data.date,
-                teams: [
-                  { name: "Winner of Game 7" },
-                  { name: "Winner of Game 8" },
-                ],
-              },
-            ],
-          },
-          {
-            title: "Semifinals",
-            seeds: [
-              {
-                id: 5,
-                date: eventState.data.date,
-                teams: [
-                  { name: "Winner of Game 9" },
-                  { name: "Winner of Game 10" },
-                ],
-              },
-              {
-                id: 6,
-                date: eventState.data.date,
-                teams: [
-                  { name: "Winner of Game 11" },
-                  { name: "Winner of Game 12" },
-                ],
-              },
-            ],
-          },
-          {
-            title: "Finals",
-            seeds: [
-              {
-                id: 3,
-                date: eventState.data.date,
-                teams: [
-                  { name: "Winner of Semifinals 1" },
-                  { name: "Winner of Semifinals 2" },
-                ],
-              },
-            ],
-          },
-        ];
-        break;
-      case 32:
-        rounds = [
-          {
-            title: "Round One",
-            seeds: [
-              {
-                id: 1,
-                date: eventState.data.date,
-                teams: [
-                  { name: eventState.data.participants[0] },
-                  { name: eventState.data.participants[1] },
-                ],
-              },
-              {
-                id: 2,
-                date: eventState.data.date,
-                teams: [
-                  { name: eventState.data.participants[2] },
-                  { name: eventState.data.participants[3] },
-                ],
-              },
-              {
-                id: 3,
-                date: eventState.data.date,
-                teams: [
-                  { name: eventState.data.participants[4] },
-                  { name: eventState.data.participants[5] },
-                ],
-              },
-              {
-                id: 4,
-                date: eventState.data.date,
-                teams: [
-                  { name: eventState.data.participants[6] },
-                  { name: eventState.data.participants[7] },
-                ],
-              },
-              {
-                id: 5,
-                date: eventState.data.date,
-                teams: [
-                  { name: eventState.data.participants[8] },
-                  { name: eventState.data.participants[9] },
-                ],
-              },
-              {
-                id: 6,
-                date: eventState.data.date,
-                teams: [
-                  { name: eventState.data.participants[10] },
-                  { name: eventState.data.participants[11] },
-                ],
-              },
-              {
-                id: 7,
-                date: eventState.data.date,
-                teams: [
-                  { name: eventState.data.participants[12] },
-                  { name: eventState.data.participants[13] },
-                ],
-              },
-              {
-                id: 8,
-                date: eventState.data.date,
-                teams: [
-                  { name: eventState.data.participants[14] },
-                  { name: eventState.data.participants[15] },
-                ],
-              },
-              {
-                id: 9,
-                date: eventState.data.date,
-                teams: [
-                  { name: eventState.data.participants[16] },
-                  { name: eventState.data.participants[17] },
-                ],
-              },
-              {
-                id: 10,
-                date: eventState.data.date,
-                teams: [
-                  { name: eventState.data.participants[18] },
-                  { name: eventState.data.participants[19] },
-                ],
-              },
-              {
-                id: 11,
-                date: eventState.data.date,
-                teams: [
-                  { name: eventState.data.participants[20] },
-                  { name: eventState.data.participants[21] },
-                ],
-              },
-              {
-                id: 12,
-                date: eventState.data.date,
-                teams: [
-                  { name: eventState.data.participants[22] },
-                  { name: eventState.data.participants[23] },
-                ],
-              },
-              {
-                id: 13,
-                date: eventState.data.date,
-                teams: [
-                  { name: eventState.data.participants[24] },
-                  { name: eventState.data.participants[25] },
-                ],
-              },
-              {
-                id: 14,
-                date: eventState.data.date,
-                teams: [
-                  { name: eventState.data.participants[26] },
-                  { name: eventState.data.participants[27] },
-                ],
-              },
-              {
-                id: 15,
-                date: eventState.data.date,
-                teams: [
-                  { name: eventState.data.participants[28] },
-                  { name: eventState.data.participants[29] },
-                ],
-              },
-              {
-                id: 16,
-                date: eventState.data.date,
-                teams: [
-                  { name: eventState.data.participants[30] },
-                  { name: eventState.data.participants[31] },
-                ],
-              },
-            ],
-          },
-          {
-            title: "Round Two",
-            seeds: [
-              {
-                id: 17,
-                date: eventState.data.date,
-                teams: [
-                  { name: eventState.data.participants[0] },
-                  { name: eventState.data.participants[1] },
-                ],
-              },
-              {
-                id: 18,
-                date: eventState.data.date,
-                teams: [
-                  { name: eventState.data.participants[2] },
-                  { name: eventState.data.participants[3] },
-                ],
-              },
-              {
-                id: 19,
-                date: eventState.data.date,
-                teams: [
-                  { name: eventState.data.participants[4] },
-                  { name: eventState.data.participants[5] },
-                ],
-              },
-              {
-                id: 20,
-                date: eventState.data.date,
-                teams: [
-                  { name: eventState.data.participants[6] },
-                  { name: eventState.data.participants[7] },
-                ],
-              },
-              {
-                id: 21,
-                date: eventState.data.date,
-                teams: [
-                  { name: eventState.data.participants[8] },
-                  { name: eventState.data.participants[9] },
-                ],
-              },
-              {
-                id: 22,
-                date: eventState.data.date,
-                teams: [
-                  { name: eventState.data.participants[10] },
-                  { name: eventState.data.participants[11] },
-                ],
-              },
-              {
-                id: 23,
-                date: eventState.data.date,
-                teams: [
-                  { name: eventState.data.participants[12] },
-                  { name: eventState.data.participants[13] },
-                ],
-              },
-              {
-                id: 24,
-                date: eventState.data.date,
-                teams: [
-                  { name: eventState.data.participants[14] },
-                  { name: eventState.data.participants[15] },
-                ],
-              },
-            ],
-          },
-          {
-            title: "Round Two",
-            seeds: [
-              {
-                id: 25,
-                date: eventState.data.date,
-                teams: [
-                  { name: "Winner of Game 1" },
-                  { name: "Winner of Game 2" },
-                ],
-              },
-              {
-                id: 26,
-                date: eventState.data.date,
-                teams: [
-                  { name: "Winner of Game 3" },
-                  { name: "Winner of Game 4" },
-                ],
-              },
-              {
-                id: 27,
-                date: eventState.data.date,
-                teams: [
-                  { name: "Winner of Game 5" },
-                  { name: "Winner of Game 6" },
-                ],
-              },
-              {
-                id: 28,
-                date: eventState.data.date,
-                teams: [
-                  { name: "Winner of Game 7" },
-                  { name: "Winner of Game 8" },
-                ],
-              },
-            ],
-          },
-          {
-            title: "Semifinals",
-            seeds: [
-              {
-                id: 29,
-                date: eventState.data.date,
-                teams: [
-                  { name: "Winner of Game 9" },
-                  { name: "Winner of Game 10" },
-                ],
-              },
-              {
-                id: 30,
-                date: eventState.data.date,
-                teams: [
-                  { name: "Winner of Game 11" },
-                  { name: "Winner of Game 12" },
-                ],
-              },
-            ],
-          },
-          {
-            title: "Finals",
-            seeds: [
-              {
-                id: 31,
-                date: eventState.data.date,
-                teams: [
-                  { name: "Winner of Semifinals 1" },
-                  { name: "Winner of Semifinals 2" },
-                ],
-              },
-            ],
-          },
-        ];
-        break;
-      default:
-        rounds = [
-          {
-            title: "Round one",
-            seeds: [
-              {
-                id: 1,
-                date: new Date().toDateString(),
-                teams: [
-                  { name: eventState.data.participants[0] },
-                  { name: eventState.data.participants[1] },
-                ],
-              },
-              {
-                id: 2,
-                date: new Date().toDateString(),
-                teams: [
-                  { name: eventState.data.participants[2] },
-                  { name: eventState.data.participants[3] },
-                ],
-              },
-            ],
-          },
-          {
-            title: "Finals",
-            seeds: [
-              {
-                id: 3,
-                date: new Date().toDateString(),
-                teams: [
-                  { name: "Winner of Game 1" },
-                  { name: "Winner of Game 2" },
-                ],
-              },
-            ],
-          },
-        ];
-        break;
-    }
-
-    return rounds;
-  }
+  // const storage = new JsonDatabase();
+  const storage = new InMemoryDatabase();
+  const manager = new BracketsManager(storage);
 
   const renderEvent = (event) => {
     return (
       <>
-        <Event {...event} />
+        <Event {...event} organizerName={event.organizerName} />
         <Container className="mt-4 p-0">
           <Row>
             <Col sm={6}>
               {/* short description */}
-              <div id="game-short-description">
+              <div id="event-short-description">
                 <p className="m-1">{event.description}</p>
               </div>
             </Col>
-            <Col sm={6}>
-              {/* Participants */}
-              <div id="game-short-description">
-                <p className="m-1">{event.participants}</p>
+            <Col className="d-grid align-items-center" sm={6}>
+              <div className={`d-flex ${eventActionClass()}`}>
+                {/* Apply */}
+                <div
+                  className="event-apply d-flex flex-column justify-content-around"
+                  onClick={handleApply}
+                >
+                  <h5 className="text-center">
+                    <Clipboard2CheckFill /> Apply
+                  </h5>
+                </div>
+
+                {userId !== "" && userId === eventState.data.organizerId && (
+                  <>
+                    {/* Edit */}
+                    <div
+                      className="event-edit d-flex flex-column justify-content-around"
+                      onClick={handleEdit}
+                    >
+                      <h5 className="text-center">
+                        <PencilSquare /> Edit
+                      </h5>
+                    </div>
+
+                    {/* Delete */}
+                    <div
+                      className="event-delete d-flex flex-column justify-content-around"
+                      onClick={handleDelete}
+                    >
+                      <h5 class="text-center">
+                        <Trash3Fill /> Delete
+                      </h5>
+                    </div>
+                  </>
+                )}
               </div>
             </Col>
           </Row>
-          <Row>
-            <Component />
-          </Row>
-          <Row>
-            <div className="event-actions mt-3 d-flex justify-content-end">
-              <Button
-                color="primary"
-                onClick={(event) => handleApply(event.id)}
-              >
-                Apply
-              </Button>
-              {userId !== "" && userId === eventState.data.organizerId && (
-                <>
-                  <Link to={eventState.url}>
-                    <Button
-                      color="primary"
-                      onClick={(event) => handleEdit(event.id)}
-                    >
-                      Edit
-                    </Button>
-                  </Link>
-                  <Button
-                    color="danger"
-                    onClick={(event) => handleDelete(event.id)}
-                  >
-                    Delete
-                  </Button>
-                </>
-              )}
-            </div>
+          <Row className="mt-4">
+            <Col>
+              {/* Participants */}
+              <div id="event-participants">
+                <h4 className="text-center mb-4">
+                  Participating Players/Teams:
+                </h4>
+                {event.participants.length > 0 && (
+                  <div id="event-participants-list-container">
+                    <ul id="event-participants-list">
+                      {event.participants.map((p, index) => (
+                        <EventParticipant key={index} name={p} />
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {event.participants.length === 0 && (
+                  <p className="event-no-participants-text text-center">
+                    There is no one participating in this event right now. Click
+                    apply above to join the event!
+                  </p>
+                )}
+              </div>
+            </Col>
           </Row>
         </Container>
+
+        <EventBracket event={event} manager={manager} />
       </>
     );
   };

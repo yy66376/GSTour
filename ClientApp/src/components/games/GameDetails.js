@@ -274,7 +274,7 @@ export default function GameDetails() {
                 </p>
               </div>
             </Col>
-            <Col sm={6}>
+            <Col className="d-grid align-items-center" sm={6}>
               <div className="d-flex justify-content-between">
                 {/* Metascore */}
                 <div className="metacritic-reviews d-flex flex-column justify-content-around">
@@ -288,7 +288,7 @@ export default function GameDetails() {
                     id="steam-purchase-link"
                     href={`https://store.steampowered.com/app/${game.steamId}`}
                   >
-                    <h5 class="text-center">
+                    <h5 className="text-center">
                       Purchase on <Steam />
                     </h5>
                   </a>
@@ -296,11 +296,11 @@ export default function GameDetails() {
 
                 {/* Tracking the game */}
                 <div
-                  class="track-game d-flex flex-column justify-content-around"
+                  className="track-game d-flex flex-column justify-content-around"
                   onClick={modalClickHandler}
                 >
-                  <h5 class="text-center">Track This Game</h5>
-                  <h5 class="text-center">
+                  <h5 className="text-center">Track This Game</h5>
+                  <h5 className="text-center">
                     <CheckCircle />
                   </h5>
                 </div>

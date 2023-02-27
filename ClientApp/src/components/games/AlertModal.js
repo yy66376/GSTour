@@ -223,113 +223,109 @@ export default function AlertModal(props) {
   };
 
   return (
-    <>
-      <Modal
-        isOpen={props.isOpen}
-        toggle={props.toggle}
-        className={props.className}
-        style={{ width: "500px" }}
-      >
-        <ModalHeader>Track {game.name}</ModalHeader>
-        <ModalBody>
-          <img
-            src={game.headerImageUrl}
-            alt={game.name}
-            className="img-fluid d-block rounded"
-          />
-          <Form id="game-alert-form" className="mt-2" onSubmit={submitHandler}>
-            <FormGroup>
-              <Label for="price-threshold-input">Price Threshold</Label>
-              <div class="dollar">
-                <Input
-                  name="price-threshold"
-                  id="price-threshold-input"
-                  type="number"
-                  step={0.01}
-                  onChange={priceThresholdValidate}
-                  value={priceThreshold}
-                  valid={priceThresholdValid === ValidityState.Valid}
-                  invalid={priceThresholdValid === ValidityState.Invalid}
-                />
-                <FormFeedback invalid>
-                  Invalid price. Price threshold must be ≥ 0 and &lt; game's
-                  current price ({moneyFormatter.format(game.finalPrice)})
-                </FormFeedback>
-                <FormFeedback valid>Valid price</FormFeedback>
-              </div>
-              <FormText>
-                We will notify you when the game's price is ≤ this threshold.
-              </FormText>
-            </FormGroup>
-
-            <FormGroup>
-              <Label className="me-2" for="email-input">
-                Email
-              </Label>
+    <Modal
+      isOpen={props.isOpen}
+      toggle={props.toggle}
+      className={props.className}
+      style={{ width: "500px" }}
+    >
+      <ModalHeader>Track {game.name}</ModalHeader>
+      <ModalBody>
+        <img
+          src={game.headerImageUrl}
+          alt={game.name}
+          className="img-fluid d-block rounded"
+        />
+        <Form id="game-alert-form" className="mt-2" onSubmit={submitHandler}>
+          <FormGroup>
+            <Label for="price-threshold-input">Price Threshold</Label>
+            <div class="dollar">
               <Input
-                name="email"
-                id="email-input"
-                type="checkbox"
-                checked={emailChecked}
-                onChange={emailChangeHandler}
-                valid={checkboxValid === ValidityState.Valid}
-                invalid={checkboxValid === ValidityState.Invalid}
+                name="price-threshold"
+                id="price-threshold-input"
+                type="number"
+                step={0.01}
+                onChange={priceThresholdValidate}
+                value={priceThreshold}
+                valid={priceThresholdValid === ValidityState.Valid}
+                invalid={priceThresholdValid === ValidityState.Invalid}
               />
-              <br />
-              <FormText>
-                Check this if you want to be alerted via email
-              </FormText>
-
-              {"Notification" in window && (
-                <>
-                  <br />
-                  <br />
-                  <Label className="me-2" for="browser-input">
-                    Browser
-                  </Label>
-                  <Input
-                    name="browser"
-                    id="browser-input"
-                    type="checkbox"
-                    checked={browserChecked}
-                    disabled={notificationEnabled === NotificationState.Denied}
-                    onChange={browserChangeHandler}
-                    valid={checkboxValid === ValidityState.Valid}
-                    invalid={checkboxValid === ValidityState.Invalid}
-                  />
-                  <br />
-                  <FormText>
-                    {Notification.permission !== "denied" &&
-                      "Check this if you want to be alerted via browser"}
-                    {Notification.permission === "denied" &&
-                      "You must enable browser notifications to use this option"}
-                  </FormText>
-                </>
-              )}
-              <FormFeedback>
-                You must select one or two of the notification methods
+              <FormFeedback invalid>
+                Invalid price. Price threshold must be ≥ 0 and &lt; game's
+                current price ({moneyFormatter.format(game.finalPrice)})
               </FormFeedback>
-              <FormFeedback valid>Notification method(s) selected</FormFeedback>
-            </FormGroup>
-          </Form>
-        </ModalBody>
-        <ModalFooter>
-          <Button
-            color="primary"
-            disabled={
-              checkboxValid !== ValidityState.Valid ||
-              priceThresholdValid !== ValidityState.Valid
-            }
-            type="submit"
-            form="game-alert-form"
-          >
-            {edit ? "Save Changes" : "Create Alert"}
-          </Button>
-          <Button color="secondary" onClick={props.toggle}>
-            Cancel
-          </Button>
-        </ModalFooter>
-      </Modal>
-    </>
+              <FormFeedback valid>Valid price</FormFeedback>
+            </div>
+            <FormText>
+              We will notify you when the game's price is ≤ this threshold.
+            </FormText>
+          </FormGroup>
+
+          <FormGroup>
+            <Label className="me-2" for="email-input">
+              Email
+            </Label>
+            <Input
+              name="email"
+              id="email-input"
+              type="checkbox"
+              checked={emailChecked}
+              onChange={emailChangeHandler}
+              valid={checkboxValid === ValidityState.Valid}
+              invalid={checkboxValid === ValidityState.Invalid}
+            />
+            <br />
+            <FormText>Check this if you want to be alerted via email</FormText>
+
+            {"Notification" in window && (
+              <>
+                <br />
+                <br />
+                <Label className="me-2" for="browser-input">
+                  Browser
+                </Label>
+                <Input
+                  name="browser"
+                  id="browser-input"
+                  type="checkbox"
+                  checked={browserChecked}
+                  disabled={notificationEnabled === NotificationState.Denied}
+                  onChange={browserChangeHandler}
+                  valid={checkboxValid === ValidityState.Valid}
+                  invalid={checkboxValid === ValidityState.Invalid}
+                />
+                <br />
+                <FormText>
+                  {Notification.permission !== "denied" &&
+                    "Check this if you want to be alerted via browser"}
+                  {Notification.permission === "denied" &&
+                    "You must enable browser notifications to use this option"}
+                </FormText>
+              </>
+            )}
+            <FormFeedback>
+              You must select one or two of the notification methods
+            </FormFeedback>
+            <FormFeedback valid>Notification method(s) selected</FormFeedback>
+          </FormGroup>
+        </Form>
+      </ModalBody>
+      <ModalFooter>
+        <Button
+          color="primary"
+          disabled={
+            checkboxValid !== ValidityState.Valid ||
+            priceThresholdValid !== ValidityState.Valid
+          }
+          type="submit"
+          form="game-alert-form"
+        >
+          {edit ? "Save Changes" : "Create Alert"}
+        </Button>
+        <Button color="secondary" onClick={props.toggle}>
+          Cancel
+        </Button>
+      </ModalFooter>
+    </Modal>
   );
 }
