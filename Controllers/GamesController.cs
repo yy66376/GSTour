@@ -46,16 +46,18 @@ public class GamesController : ControllerBase
 
     [HttpGet]
     [Route("SearchAll")]
-    public async Task<ActionResult<IEnumerable<Game>>> SearchGamesAll(string q="") {
+    public async Task<ActionResult<IEnumerable<Game>>> SearchGamesAll(string q = "")
+    {
         var gameQuery = from g in _context.Games select g;
 
         if (string.IsNullOrEmpty(q))
             return BadRequest();
 
         gameQuery = gameQuery.Where(g => g.Name.Contains(q)).AsNoTracking();
-        var games = await gameQuery.Select(g => new { g.Id, g.Name, g.HeaderImageUrl}).ToListAsync();
+        var games = await gameQuery.Select(g => new { g.Id, g.Name, g.HeaderImageUrl }).ToListAsync();
 
-        var results = games.Select(g => new GameSelectDTO{
+        var results = games.Select(g => new GameSelectDTO
+        {
             Id = g.Id,
             Name = g.Name,
             HeaderImageUrl = g.HeaderImageUrl
@@ -140,7 +142,9 @@ public class GamesController : ControllerBase
                             Id = m.Id,
                             MaxVideoUrl = m.MaxVideoUrl,
                             MinVideoUrl = m.MinVideoUrl,
-                            ThumbnailUrl = m.ThumbnailUrl
+                            ThumbnailUrl = m.ThumbnailUrl,
+                            MinVideoWebmUrl = m.MinVideoWebmUrl,
+                            MaxVideoWebmUrl = m.MaxVideoWebmUrl
                         }
                 )
                 .ToArray(),
@@ -156,44 +160,6 @@ public class GamesController : ControllerBase
                 )
                 .ToArray()
         };
-    }
-
-    // PUT: api/Games/5
-    // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-    [HttpPut("{id}")]
-    public async Task<IActionResult> PutGame(int id, Game game)
-    {
-        if (id != game.Id)
-            return BadRequest();
-
-        _context.Entry(game).State = EntityState.Modified;
-
-        try
-        {
-            await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            if (!GameExists(id))
-                return NotFound();
-            else
-                throw;
-        }
-
-        return NoContent();
-    }
-
-    // POST: api/Games
-    // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-    [HttpPost]
-    public async Task<ActionResult<Game>> PostGame(Game game)
-    {
-        if (_context.Games == null)
-            return Problem("Entity set 'GDTourContext.Games'  is null.");
-        _context.Games.Add(game);
-        await _context.SaveChangesAsync();
-
-        return CreatedAtAction("GetGame", new { id = game.Id }, game);
     }
 
     // DELETE: api/Games/5

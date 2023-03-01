@@ -39,6 +39,7 @@ public class SteamSpyApiUpdateJob : IJob
                 for (var i = start; i < end && i < appIds.Count; i++)
                 {
                     var appId = appIds[i];
+
                     var appDetail = await Steam.Steam.GetAppDetails(appId);
                     if (appDetail == null) continue;
 
@@ -105,6 +106,8 @@ public class SteamSpyApiUpdateJob : IJob
                                 movie.MaxVideoUrl = newMovie.MaxVideoUrl;
                                 movie.MinVideoUrl = newMovie.MinVideoUrl;
                                 movie.ThumbnailUrl = newMovie.ThumbnailUrl;
+                                movie.MinVideoWebmUrl = newMovie.MinVideoWebmUrl;
+                                movie.MaxVideoWebmUrl = newMovie.MaxVideoWebmUrl;
                             }
 
                             // if there are more movies currently, add them accordingly
@@ -117,7 +120,9 @@ public class SteamSpyApiUpdateJob : IJob
                                         GameId = existingGame.Id,
                                         ThumbnailUrl = newMovie.ThumbnailUrl,
                                         MinVideoUrl = newMovie.MinVideoUrl,
-                                        MaxVideoUrl = newMovie.MaxVideoUrl
+                                        MaxVideoUrl = newMovie.MaxVideoUrl,
+                                        MinVideoWebmUrl = newMovie.MinVideoWebmUrl,
+                                        MaxVideoWebmUrl = newMovie.MaxVideoWebmUrl
                                     });
                             }
                         }
@@ -163,7 +168,9 @@ public class SteamSpyApiUpdateJob : IJob
                                     GameId = newGame.Id,
                                     ThumbnailUrl = movieDetail.ThumbnailUrl,
                                     MinVideoUrl = movieDetail.MinVideoUrl,
-                                    MaxVideoUrl = movieDetail.MaxVideoUrl
+                                    MaxVideoUrl = movieDetail.MaxVideoUrl,
+                                    MinVideoWebmUrl = movieDetail.MinVideoWebmUrl,
+                                    MaxVideoWebmUrl = movieDetail.MaxVideoWebmUrl
                                 });
                     }
 

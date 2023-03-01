@@ -1,4 +1,4 @@
-﻿#event-short-description,
+#event-short-description,
 #event-participants {
   display: flex;
   flex-direction: column;
@@ -68,4 +68,18 @@
 
 .event-no-participants-text {
   font-size: 20px;
+}
+
+#event-short-description p::-webkit-scrollbar {
+  width: 8.5px;
+}
+
+#event-short-description p::-webkit-scrollbar-track {
+  background-color: transparent;
+  border-radius: 100px;
+}
+
+#event-short-description p::-webkit-scrollbar-thumb {
+  background-color: #4b4842;
+  border-radius: 100px;
 }

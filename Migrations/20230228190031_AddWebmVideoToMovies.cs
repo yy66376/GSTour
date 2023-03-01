@@ -5,14 +5,20 @@
 namespace GDTour.Migrations
 {
     /// <inheritdoc />
-    public partial class AddBracketJsonToEvent : Migration
+    public partial class AddWebmVideoToMovies : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<string>(
-                name: "BracketJson",
-                table: "Events",
+                name: "MaxVideoWebmUrl",
+                table: "Movies",
+                type: "nvarchar(max)",
+                nullable: true);
+
+            migrationBuilder.AddColumn<string>(
+                name: "MinVideoWebmUrl",
+                table: "Movies",
                 type: "nvarchar(max)",
                 nullable: true);
         }
@@ -21,8 +27,12 @@ namespace GDTour.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "BracketJson",
-                table: "Events");
+                name: "MaxVideoWebmUrl",
+                table: "Movies");
+
+            migrationBuilder.DropColumn(
+                name: "MinVideoWebmUrl",
+                table: "Movies");
         }
     }
 }

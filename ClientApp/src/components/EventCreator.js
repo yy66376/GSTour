@@ -1,4 +1,4 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import { Form, Label, Input, Button, FormGroup, FormText } from "reactstrap";
 import { useNavigate } from "react-router-dom";
 import authService from "./api-authorization/AuthorizeService";
@@ -50,58 +50,12 @@ export default function EventCreator() {
     }
   };
 
-  function convertMonthToInt(month) {
-    month = month.toString();
-    switch (month) {
-      case "Jan":
-        return 1;
-      case "Feb":
-        return 2;
-      case "Mar":
-        return 3;
-      case "Apr":
-        return 4;
-      case "May":
-        return 5;
-      case "Jun":
-        return 6;
-      case "Jul":
-        return 7;
-      case "Aug":
-        return 8;
-      case "Sep":
-        return 9;
-      case "Oct":
-        return 10;
-      case "Nov":
-        return 11;
-      case "Dec":
-        return 12;
-      default:
-        return 0;
-    }
-  }
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    var d = new Date();
-    console.log(data.date);
-    console.log(Number(data.date.substring(5, 7)));
-    console.log(Number(convertMonthToInt(d.toDateString().substring(4, 7))));
-
-    if (
-      (Number(data.date.substring(0, 4)) >=
-        Number(d.toDateString().substring(11, 15)) &&
-        Number(data.date.substring(5, 7)) >=
-          Number(convertMonthToInt(d.toDateString().substring(4, 7))) &&
-        Number(data.date.substring(8, 10)) >
-          Number(d.toDateString().substring(8, 10))) ||
-      (Number(data.date.substring(0, 4)) >
-        Number(d.toDateString().substring(11, 15)) &&
-        Number(data.date.substring(5, 7)) >
-          Number(convertMonthToInt(d.toDateString().substring(4, 7))))
-    ) {
+    const tomorrowDate = new Date();
+    tomorrowDate.setHours(24, 0, 0, 0);
+    const eventDate = new Date(data.date);
+    if (eventDate >= tomorrowDate) {
       const token = await authService.getAccessToken();
       const response = await fetch("/api/Events", {
         method: "POST",

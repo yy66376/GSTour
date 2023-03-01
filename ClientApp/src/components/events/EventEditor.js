@@ -1,16 +1,6 @@
-﻿import { useParams, Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import React, { useEffect, useState } from "react";
-import {
-  Col,
-  Container,
-  Row,
-  Form,
-  Label,
-  Input,
-  Button,
-  FormGroup,
-  FormText,
-} from "reactstrap";
+import { Form, Label, Input, Button, FormGroup, FormText } from "reactstrap";
 import { useNavigate } from "react-router-dom";
 import authService from "../api-authorization/AuthorizeService";
 import { toast } from "react-toastify";
@@ -77,57 +67,14 @@ export default function EventEditor() {
     populateUser();
   }, [eventId]);
 
-  function convertMonthToInt(month) {
-    month = month.toString();
-    switch (month) {
-      case "Jan":
-        return 1;
-      case "Feb":
-        return 2;
-      case "Mar":
-        return 3;
-      case "Apr":
-        return 4;
-      case "May":
-        return 5;
-      case "Jun":
-        return 6;
-      case "Jul":
-        return 7;
-      case "Aug":
-        return 8;
-      case "Sep":
-        return 9;
-      case "Oct":
-        return 10;
-      case "Nov":
-        return 11;
-      case "Dec":
-        return 12;
-      default:
-        return 0;
-    }
-  }
-
   async function handleSubmit(e) {
     e.preventDefault();
     const token = await authService.getAccessToken();
-
-    var d = new Date();
-    console.log(eventState.data.date);
-    if (
-      (Number(eventState.data.date.substring(0, 4)) >=
-        Number(d.toDateString().substring(11, 15)) &&
-        Number(eventState.data.date.substring(5, 7)) >=
-          Number(convertMonthToInt(d.toDateString().substring(4, 7))) &&
-        Number(eventState.data.date.substring(8, 10)) >
-          Number(d.toDateString().substring(8, 10))) ||
-      (Number(eventState.data.date.substring(0, 4)) >
-        Number(d.toDateString().substring(11, 15)) &&
-        Number(eventState.data.date.substring(5, 7)) >
-          Number(convertMonthToInt(d.toDateString().substring(4, 7))))
-    ) {
-      const response = fetch("/api/Events/" + eventId, {
+    const tomorrowDate = new Date();
+    tomorrowDate.setHours(24, 0, 0, 0);
+    const eventDate = new Date(eventState.data.date);
+    if (eventDate >= tomorrowDate) {
+      const response = await fetch("/api/Events/" + eventId, {
         method: "PATCH",
         headers: !token
           ? { "Content-Type": "application/json" }
@@ -136,8 +83,6 @@ export default function EventEditor() {
               Authorization: `Bearer ${token}`,
             },
         body: JSON.stringify(eventState.data),
-      }).then(() => {
-        console.log("event updated");
       });
 
       if (response.ok) {
@@ -182,7 +127,7 @@ export default function EventEditor() {
 
   return (
     <>
-      <h1 className="text-center mb-4">Create an event</h1>
+      <h1 className="text-center mb-4">Edit Event</h1>
       <img
         className="img-fluid m-auto d-block"
         style={{ height: "150px" }}

@@ -16,7 +16,7 @@ public static class SeedData
                 serviceProvider.GetRequiredService<IOptions<OperationalStoreOptions>>());
         // Look for any movies.
         if (context.Games.Any()) return; // DB has been seeded
-        var path = Path.Combine(Directory.GetCurrentDirectory(), "Data", "two_hundred_games.txt");
+        var path = Path.Combine(Directory.GetCurrentDirectory(), "Data", "steam_app_data_3.txt");
         var seeds = await Services.Steam.Steam.GetAppsFromTxt(path);
         context.ChangeTracker.AutoDetectChangesEnabled = false;
         // Map each SteamAppModel to a Game model in the database
@@ -61,7 +61,9 @@ public static class SeedData
                         GameId = newGame.Id,
                         ThumbnailUrl = movieDetail.ThumbnailUrl,
                         MinVideoUrl = movieDetail.MinVideoUrl,
-                        MaxVideoUrl = movieDetail.MaxVideoUrl
+                        MaxVideoUrl = movieDetail.MaxVideoUrl,
+                        MinVideoWebmUrl = movieDetail.MinVideoWebmUrl,
+                        MaxVideoWebmUrl = movieDetail.MaxVideoWebmUrl
                     });
         }
 

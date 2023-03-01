@@ -1,5 +1,5 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
+using System;
 
 #nullable disable
 
@@ -11,12 +11,6 @@ namespace GDTour.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<int>(
-                name: "EventId",
-                table: "AspNetUsers",
-                type: "int",
-                nullable: true);
-
             migrationBuilder.CreateTable(
                 name: "Events",
                 columns: table => new
@@ -67,18 +61,7 @@ namespace GDTour.Migrations
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_UserEvents_Events_EventId",
-                        column: x => x.EventId,
-                        principalTable: "Events",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AspNetUsers_EventId",
-                table: "AspNetUsers",
-                column: "EventId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Events_GameId",
@@ -99,35 +82,16 @@ namespace GDTour.Migrations
                 name: "IX_UserEvents_ParticipantId",
                 table: "UserEvents",
                 column: "ParticipantId");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_AspNetUsers_Events_EventId",
-                table: "AspNetUsers",
-                column: "EventId",
-                principalTable: "Events",
-                principalColumn: "Id");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_AspNetUsers_Events_EventId",
-                table: "AspNetUsers");
-
             migrationBuilder.DropTable(
                 name: "UserEvents");
 
             migrationBuilder.DropTable(
                 name: "Events");
-
-            migrationBuilder.DropIndex(
-                name: "IX_AspNetUsers_EventId",
-                table: "AspNetUsers");
-
-            migrationBuilder.DropColumn(
-                name: "EventId",
-                table: "AspNetUsers");
         }
     }
 }

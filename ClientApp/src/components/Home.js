@@ -1,26 +1,184 @@
-import React, { Component } from 'react';
+import React, { Component, useEffect, useState } from "react";
+import { PinMap } from "react-bootstrap-icons";
+import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
+import {
+  Button,
+  Card,
+  CardBody,
+  CardText,
+  CardTitle,
+  Col,
+  Row,
+} from "reactstrap";
+import "./Home.css";
 
-export class Home extends Component {
-  static displayName = Home.name;
+export function Home() {
+  const [gameState, setGameState] = useState({
+    data: {},
+    loading: true,
+  });
+  const [eventState, setEventState] = useState({
+    data: {},
+    loading: true,
+  });
 
-  render() {
+  useEffect(() => {
+    const populateGameData = async () => {
+      const response = await fetch("api/Games?sort=date_desc&pageSize=8");
+      if (response.ok) {
+        setGameState({ data: await response.json(), loading: false });
+      } else {
+        toast.error("🛑 Unable to contact Games API. 🛑", {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "dark",
+        });
+      }
+    };
+    const populateEventData = async () => {
+      const response = await fetch("api/Events?sort=date_desc&pageSize=8");
+      if (response.ok) {
+        setEventState({ data: await response.json(), loading: false });
+      } else {
+        toast.error("🛑 Unable to contact Events API. 🛑", {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "dark",
+        });
+      }
+    };
+
+    populateGameData();
+    populateEventData();
+  }, []);
+
+  const moneyFormatter = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  });
+
+  const gameIsDiscounted = (game) => {
+    if (game.finalPrice < game.initialPrice) {
+      return "discounted-game-price";
+    }
+  };
+
+  const renderGameCards = (games) => {
     return (
-      <div>
-        <h1>Hello, world!</h1>
-        <p>Welcome to your new single-page application, built with:</p>
-        <ul>
-          <li><a href='https://get.asp.net/'>ASP.NET Core</a> and <a href='https://msdn.microsoft.com/en-us/library/67ef8sbd.aspx'>C#</a> for cross-platform server-side code</li>
-          <li><a href='https://facebook.github.io/react/'>React</a> for client-side code</li>
-          <li><a href='http://getbootstrap.com/'>Bootstrap</a> for layout and styling</li>
-        </ul>
-        <p>To help you get started, we have also set up:</p>
-        <ul>
-          <li><strong>Client-side navigation</strong>. For example, click <em>Counter</em> then <em>Back</em> to return here.</li>
-          <li><strong>Development server integration</strong>. In development mode, the development server from <code>create-react-app</code> runs in the background automatically, so your client-side resources are dynamically built on demand and the page refreshes when you modify any file.</li>
-          <li><strong>Efficient production builds</strong>. In production mode, development-time features are disabled, and your <code>dotnet publish</code> configuration produces minified, efficiently bundled JavaScript files.</li>
-        </ul>
-        <p>The <code>ClientApp</code> subdirectory is a standard React application based on the <code>create-react-app</code> template. If you open a command prompt in that directory, you can run <code>npm</code> commands such as <code>npm test</code> or <code>npm install</code>.</p>
-      </div>
+      <>
+        <h4 className="mt-5">New Game Releases</h4>
+        <Row className="new-release-game-section">
+          {games.map((game) => {
+            return (
+              <Col key={game.id} sm={3}>
+                <Link to={`/Games/${game.id}`} className="card-link">
+                  <Card className="new-release-game mt-3 mx-2">
+                    <img
+                      src={game.headerImageUrl}
+                      className="img-fluid"
+                      alt={game.name}
+                    />
+                    <CardBody>
+                      <CardTitle className="new-release-game-name">
+                        {game.name}
+                      </CardTitle>
+                      <CardText
+                        className={`new-release-game-price ${gameIsDiscounted(
+                          game
+                        )}`}
+                      >
+                        {moneyFormatter.format(game.finalPrice)}
+                      </CardText>
+                    </CardBody>
+                  </Card>
+                </Link>
+              </Col>
+            );
+          })}
+        </Row>
+        <div className="d-flex justify-content-center mt-5">
+          <Link to="/Games?sort=date_desc">
+            <Button outline color="primary">
+              See All New Game Releases
+            </Button>
+          </Link>
+        </div>
+      </>
     );
-  }
+  };
+
+  const renderEventCards = (events) => {
+    return (
+      <>
+        <h4 className="mt-5">New Events/Tournaments</h4>
+        <Row className="new-events-section">
+          {events.map((event) => {
+            return (
+              <Col key={event.id} sm={3}>
+                <Link to={`/Events/${event.id}`} className="card-link">
+                  <Card className="new-event mt-3 mx-2">
+                    <img
+                      src={event.headerImageUrl}
+                      className="img-fluid"
+                      alt={event.name}
+                    />
+                    <CardBody>
+                      <CardTitle className="new-event-name text-nowrap overflow-hidden">
+                        {event.name}
+                      </CardTitle>
+                      <CardText className="new-event-location">
+                        <PinMap />
+                        &nbsp;&nbsp;
+                        {event.location}
+                      </CardText>
+                    </CardBody>
+                  </Card>
+                </Link>
+              </Col>
+            );
+          })}
+        </Row>
+        <div className="d-flex justify-content-center mt-5 mb-5">
+          <Link to="/Events?sort=date_desc">
+            <Button outline color="primary">
+              See All New Events/Tournaments
+            </Button>
+          </Link>
+        </div>
+      </>
+    );
+  };
+
+  return (
+    <>
+      <h1 className="text-center">Welcome to GSTour!</h1>
+      <h5 className="text-center">
+        Your one stop shop for discounted Steam games and tournaments
+      </h5>
+      <img
+        src={`${process.env.PUBLIC_URL}/images/logo.jpg`}
+        className="img-fluid m-auto d-block"
+        alt="logo"
+        style={{ width: "55%", paddingTop: "100px", paddingBottom: "100px" }}
+      />
+      <h5 className="text-center">
+        Feel free to browse our catalogue of Steam games with prices updated
+        daily!
+      </h5>
+
+      {!gameState.loading && renderGameCards(gameState.data.games)}
+      {!eventState.loading && renderEventCards(eventState.data.events)}
+    </>
+  );
 }

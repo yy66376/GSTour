@@ -30,14 +30,16 @@ public class EventsController : Controller
     private readonly GDTourContext _context;
     private readonly UserManager<GDTourUser> _userManager;
     private readonly IHubContext<BracketHub, IBracketClient> _bracketHub;
+    private readonly IHubContext<EventHub, IEventClient> _eventHub;
     private const int SearchResultLimit = 7;
 
     public EventsController(GDTourContext context, UserManager<GDTourUser> userManager,
-        IHubContext<BracketHub, IBracketClient> bracketHub)
+        IHubContext<BracketHub, IBracketClient> bracketHub, IHubContext<EventHub, IEventClient> eventHub)
     {
         _context = context;
         _userManager = userManager;
         _bracketHub = bracketHub;
+        _eventHub = eventHub;
     }
 
     // GET: api/Events
@@ -46,18 +48,40 @@ public class EventsController : Controller
         string search = "",
         int page = 1,
         string sort = "",
-        int pageSize = 10
+        int pageSize = 10,
+        string filter = ""
     )
     {
-        var events = _context.Events
-            .Include(ev => ev.Game)
-            .Include(ev => ev.Organizer);
-        //if (!string.IsNullOrEmpty(search))
-        //    events = events.Where(ev => ev.Name.Contains(search));
+        string? currentUserId = null;
+        if (User.IsAuthenticated()) currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
 
-        //events = events.OrderBy(ev => ev.Date.Year).ThenBy(ev => ev.Date.Month).ThenBy(ev=>ev.Date.Day);
+        var events = from ev in _context.Events select ev;
 
-        var result = await PaginatedList<Event>.CreateAsync(events.AsNoTracking(), page, pageSize);
+        if (!string.IsNullOrEmpty(search))
+            events = events.Where(ev => ev.Name.Contains(search));
+        if (!string.IsNullOrEmpty(currentUserId) && !string.IsNullOrEmpty(filter))
+            events = filter switch
+            {
+                "organized" => events.Where(ev => ev.OrganizerId == currentUserId),
+                "participating" => events.Where(ev =>
+                    _context.UserEvents.Any(ue => ue.ParticipantId == currentUserId && ue.EventId == ev.Id)),
+                _ => events
+            };
+
+        events = sort switch
+        {
+            "name_asc" => events.OrderBy(ev => ev.Name).ThenBy(g => g.Id),
+            "name_desc" => events.OrderByDescending(ev => ev.Name).ThenBy(g => g.Id),
+            "date_asc" => events.OrderBy(ev => ev.Date).ThenBy(g => g.Id),
+            "date_desc" => events.OrderByDescending(ev => ev.Date).ThenBy(g => g.Id),
+            "creation_date_asc" => events.OrderBy(ev => ev.CreationDateTime).ThenBy(g => g.Id),
+            "creation_date_desc" => events.OrderByDescending(ev => ev.CreationDateTime).ThenBy(g => g.Id),
+            _ => events.OrderBy(ev => ev.Id)
+        };
+
+        var result =
+            await PaginatedList<Event>.CreateAsync(
+                events.Include(ev => ev.Game).Include(ev => ev.Organizer).AsNoTracking(), page, pageSize);
 
         return new EventPageDTO()
         {
@@ -236,8 +260,9 @@ public class EventsController : Controller
         await _context.UserEvents.AddAsync(userEvent);
         await _context.SaveChangesAsync();
 
-        await _bracketHub.Clients.All.ReceiveParticipant(
+        await _eventHub.Clients.Group($"event-{currentEvent.Id}").ReceiveParticipant(
             $"{currentUser.FirstName} {currentUser.LastName} ({currentUser.UserName})");
+
         return Ok();
     }
 
@@ -247,15 +272,11 @@ public class EventsController : Controller
     [Authorize]
     public async Task<IActionResult> DeleteEvent(int id)
     {
-
         var Event = await _context.Events.FindAsync(id);
         var currentUser = await _context.GDTourUsers.FindAsync(Event.OrganizerId);
         if (Event == null)
             return NotFound();
-        if (Event.OrganizerId != currentUser.Id)
-        {
-            return Forbid();
-        }
+        if (Event.OrganizerId != currentUser.Id) return Forbid();
 
         var userEvents = await _context.UserEvents.Where(ue => ue.EventId == id).ToListAsync();
 
@@ -280,7 +301,7 @@ public class EventsController : Controller
         currentEvent.BracketJson = eventBracket.BracketJson;
         await _context.SaveChangesAsync();
 
-        await _bracketHub.Clients.All.ReceiveBracket(eventBracket.BracketJson);
+        await _bracketHub.Clients.Group($"bracket-{currentEvent.Id}").ReceiveBracket(eventBracket.BracketJson);
         return NoContent();
     }
 

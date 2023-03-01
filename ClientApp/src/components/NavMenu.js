@@ -59,7 +59,7 @@ export class NavMenu extends Component {
           light
         >
           <NavbarBrand style={{ color: "white" }} tag={Link} to="/">
-            GDTour
+            GSTour
           </NavbarBrand>
           <NavbarToggler onClick={this.toggleNavbar} className="mr-2" />
           <Collapse
@@ -77,19 +77,10 @@ export class NavMenu extends Component {
                 <NavLink tag={Link} className="text-dark" to="/Games">
                   Games
                 </NavLink>
-                </NavItem>
-                <NavItem>
-                    <NavLink
-                        tag={Link}
-                        className="text-dark"
-                        to="/Events"
-                    >
-                        Events
-                    </NavLink>
-                </NavItem>
+              </NavItem>
               <NavItem>
-                <NavLink tag={Link} className="text-dark" to="/fetch-data">
-                  Fetch data
+                <NavLink tag={Link} className="text-dark" to="/Events">
+                  Events
                 </NavLink>
               </NavItem>
               <LoginMenu></LoginMenu>

@@ -1,0 +1,24 @@
+.card-link {
+  text-decoration: none;
+}
+
+.new-release-game-name,
+.new-event-name {
+  color: white;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.new-release-game-price,
+.new-event-location {
+  color: rgb(204, 200, 200);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.discounted-game-price {
+  color: green;
+  text-decoration: line-through;
+}

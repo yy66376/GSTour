@@ -4,6 +4,7 @@ using GDTour.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GDTour.Migrations
 {
     [DbContext(typeof(GDTourContext))]
-    partial class GDTourContextModelSnapshot : ModelSnapshot
+    [Migration("20230228163046_AddDiscountDateAndCreationDate")]
+    partial class AddDiscountDateAndCreationDate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -403,13 +406,7 @@ namespace GDTour.Migrations
                     b.Property<string>("MaxVideoUrl")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("MaxVideoWebmUrl")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("MinVideoUrl")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("MinVideoWebmUrl")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ThumbnailUrl")

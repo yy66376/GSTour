@@ -35,9 +35,10 @@ public class Game
 
     public string? HeaderImageUrl { get; set; }
 
+    public DateTime DiscountDate { get; set; } = DateTime.MinValue;
+
     public ICollection<Screenshot> Screenshots { get; set; }
     public ICollection<Movie> Movies { get; set; }
     public ICollection<Alert> Alerts { get; set; }
-    [JsonIgnore]
-    public ICollection<Event> Events { get; set; }
+    [JsonIgnore] public ICollection<Event> Events { get; set; }
 }

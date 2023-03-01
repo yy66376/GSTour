@@ -1,12 +1,13 @@
-﻿import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import Event from "./events/Event";
-import { Container, Button } from "reactstrap";
+import { Container, Button, FormGroup, Label, Input } from "reactstrap";
 import ReactPaginate from "react-paginate";
 import { ArrowLeft, ArrowRight } from "react-bootstrap-icons";
-import GameActions from "./games/GameActions";
+import EventActions from "./events/EventActions";
 
 import "./Games.css";
+import authService from "./api-authorization/AuthorizeService";
 
 const getDefinedParams = (...params) => {
   const definedParams = {};
@@ -36,15 +37,25 @@ export default function Events() {
   );
   let sort = searchParams.get("sort");
   let search = searchParams.get("search");
+  let filter = searchParams.get("filter");
 
   const fetchEventData = useCallback(async () => {
     const params = getDefinedParams(
       ["page", page],
       ["pageSize", pageSize],
       ["sort", sort],
-      ["search", search]
+      ["search", search],
+      ["filter", filter]
     );
-    const response = await fetch("api/Events?" + new URLSearchParams(params));
+    const token = await authService.getAccessToken();
+    const response = await fetch("api/Events?" + new URLSearchParams(params), {
+      headers: !token
+        ? { "Content-Type": "application/json" }
+        : {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+    });
     let data = null;
     if (response.ok) {
       data = await response.json();
@@ -52,7 +63,7 @@ export default function Events() {
       // tell user that game api is down
     }
     return data;
-  }, [page, pageSize, sort, search]);
+  }, [page, pageSize, sort, search, filter]);
 
   // populate events when the component mounts
   useEffect(() => {
@@ -97,6 +108,12 @@ export default function Events() {
     setSearchParams(searchParams);
   };
 
+  const filterChangeHandler = (newFilter) => {
+    searchParams.set("filter", newFilter);
+    searchParams.set("page", 1);
+    setSearchParams(searchParams);
+  };
+
   const createButtonClickHandler = () => {
     navigate("/Events/Create");
   };
@@ -119,14 +136,16 @@ export default function Events() {
           {!searchParams.has("search") && <h2>All Events</h2>}
         </div>
 
-        <GameActions
+        <EventActions
           page={page}
           pageSize={pageSize}
           currentPageSize={eventState.data.events.length}
           sort={sort}
+          filter={filter}
           totalResults={totalResults}
           onChangeSort={sortChangeHandler}
           onChangePageSize={pageSizeChangeHandler}
+          onChangeFilter={filterChangeHandler}
         />
 
         <div className="create-event-container d-flex justify-content-end mt-3">

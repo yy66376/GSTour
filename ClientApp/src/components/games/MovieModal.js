@@ -31,6 +31,7 @@ export default function MovieModal(props) {
       >
         <video controls>
           <source src={props.maxVideoUrl} type="video/mp4" />
+          <source src={props.maxVideoWebmUrl} type="video/webm" />
         </video>
       </Modal>
     </>

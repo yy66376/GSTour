@@ -68,9 +68,7 @@ builder.Services.AddQuartz(q =>
     q.AddTrigger(opts => opts
         .ForJob(priceUpdateJobKey) // link to the price update job
         .WithIdentity("PriceUpdateJob-trigger") // give the trigger a unique name
-        .WithCronSchedule("0 24 9 * * ?")); // run at 6am everyday
-    //.WithCronSchedule("0/50 * * * * ?")); // run every 50 seconds
-
+        .WithCronSchedule("30 12 13 * * ?")); // run at 6am everyday
 
     // Create a "key" for the game update job
     var gameUpdateJobKey = new JobKey("GameUpdateJob");
@@ -82,7 +80,7 @@ builder.Services.AddQuartz(q =>
     q.AddTrigger(opts => opts
         .ForJob(gameUpdateJobKey) // link to game update job
         .WithIdentity("GameUpdateJob-trigger") // give the trigger a unique name
-        .WithCronSchedule("0 24 13 * * ?")); // run at 12:45 everyday
+        .WithCronSchedule("0 0 0 1 * ? *")); // run the 1st day of every month
 });
 
 builder.Services.AddQuartzHostedService(opt => { opt.WaitForJobsToComplete = true; });
@@ -121,6 +119,7 @@ app.UseAuthorization();
 app.MapControllerRoute("default", "{controller}/{action=Index}/{id?}");
 app.MapRazorPages();
 app.MapHub<NotificationHub>("/hubs/notifications");
+app.MapHub<EventHub>("/hubs/events");
 app.MapHub<BracketHub>("/hubs/brackets");
 
 app.MapFallbackToFile("index.html");

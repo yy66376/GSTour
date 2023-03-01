@@ -3,6 +3,4 @@
 public interface IBracketClient
 {
     Task ReceiveBracket(string bracketJson);
-
-    Task ReceiveParticipant(string participantName);
 }

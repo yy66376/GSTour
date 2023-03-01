@@ -168,7 +168,9 @@ public static class Steam
                 {
                     ThumbnailUrl = movie.thumbnail,
                     MinVideoUrl = movie.mp4?["480"],
-                    MaxVideoUrl = movie.mp4?["max"]
+                    MaxVideoUrl = movie.mp4?["max"],
+                    MinVideoWebmUrl = movie.webm?["480"],
+                    MaxVideoWebmUrl = movie.webm?["max"]
                 });
 
         if (jsonData.screenshots != null)
@@ -223,6 +225,7 @@ public static class Steam
             if (!success) // Game info not exposed to the public
             {
                 Console.WriteLine($"Game with Steam App Id {appId} does not contain Price Information.");
+                answer.Add((appId, null, null));
                 continue;
             }
 

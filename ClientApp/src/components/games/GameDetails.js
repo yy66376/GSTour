@@ -1,7 +1,7 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Game from "./Game";
-import { Button, Col, Container, Row } from "reactstrap";
+import { Col, Container, Row } from "reactstrap";
 import "./GameDetails.css";
 import { CheckCircle, EmojiFrownFill, Steam } from "react-bootstrap-icons";
 import Carousel from "react-multi-carousel";
@@ -143,12 +143,13 @@ export default function GameDetails() {
           dotListClass="custom-dot-list-style"
           responsive={responsive}
         >
-          {game.movies.map((movie, index) => {
+          {game.movies.map((movie) => {
             return (
               <MovieModal
                 key={movie.id}
                 thumbnailUrl={movie.thumbnailUrl}
                 maxVideoUrl={movie.maxVideoUrl}
+                maxVideoWebmUrl={movie.maxVideoWebmUrl}
               />
             );
           })}

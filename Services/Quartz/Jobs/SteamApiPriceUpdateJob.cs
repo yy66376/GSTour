@@ -41,9 +41,9 @@ public class SteamApiPriceUpdateJob : IJob
         const int batchSize = 500;
         var numBatches = (int)Math.Ceiling((double)numGames / batchSize);
 
-        for (var batch = 0; batch < numBatches; batch++)
+        for (var batch = 43; batch < numBatches; batch++)
         {
-            _logger.LogInformation($"Starting price update batch {batch}.");
+            _logger.LogInformation("Starting price update batch {Batch}.", batch);
             var games = await _dbContext.Games
                 .OrderBy(g => g.Id)
                 .Skip(batch * batchSize)
@@ -72,9 +72,13 @@ public class SteamApiPriceUpdateJob : IJob
             {
                 var game = games[i];
                 var (appId, initialPrice, finalPrice) = updatedGamePrices[i];
+                _logger.LogInformation("Updating game with appId = {AppId}", appId);
                 var finalPriceChanged = false;
 
-                if (appId == 40) finalPrice = 0.12M;
+                if (appId == 40)
+                {
+                    finalPrice = 0.02M;
+                }
 
                 _dbContext.Games.Attach(game);
                 if (game.InitialPrice != initialPrice)

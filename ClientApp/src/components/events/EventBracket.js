@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import authService from "../api-authorization/AuthorizeService";
 import MatchModal from "./MatchModal";
-import authService from "../api-authorization/AuthorizeService";
 
 export default function EventBracket({ event, manager }) {
   const [matchModal, setMatchModal] = useState(false);
@@ -53,6 +52,9 @@ export default function EventBracket({ event, manager }) {
         await connection.start();
         console.log("Bracket SignalR Connected");
 
+        await connection.invoke("SubscribeToBracket", event.id);
+        console.log("Added to bracket group!");
+
         connection.on("ReceiveBracket", async (bracketJson) => {
           console.log("Receive bracket triggered!");
 
@@ -90,13 +92,6 @@ export default function EventBracket({ event, manager }) {
       renderBracket(data);
     };
 
-    const populateUser = async () => {
-      if (await authService.isAuthenticated()) {
-        setUserId((await authService.getUser()).sub);
-      }
-    };
-
-    populateUser();
     render();
   }, [event.name, event.id, event.participants, manager, event.bracketJson]);
 

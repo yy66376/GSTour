@@ -1,7 +1,7 @@
-﻿import { useParams, Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Event from "./Event";
-import { Col, Container, Row, Button } from "reactstrap";
+import { Col, Container, Row } from "reactstrap";
 import "./EventDetails.css";
 import { useNavigate } from "react-router-dom";
 import authService from "../api-authorization/AuthorizeService";
@@ -15,7 +15,12 @@ import EventParticipant from "./EventParticipant";
 // import JsonDatabase from "brackets-json-db";
 import { InMemoryDatabase } from "brackets-memory-db";
 import { BracketsManager } from "brackets-manager";
+import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 import EventBracket from "./EventBracket";
+import {
+  ApplicationPaths,
+  QueryParameterNames,
+} from "../api-authorization/ApiAuthorizationConstants";
 
 export default function EventDetails() {
   const navigate = useNavigate();
@@ -71,6 +76,44 @@ export default function EventDetails() {
 
     populateEventData();
     populateUser();
+
+    const connection = new HubConnectionBuilder()
+      .withUrl("/hubs/events", {
+        accessTokenFactory: () => authService.getAccessToken(),
+      })
+      .configureLogging(LogLevel.Trace)
+      .build();
+
+    const start = async () => {
+      try {
+        await connection.start();
+        console.log("Event SignalR Connected");
+
+        await connection.invoke("SubscribeToEvent", parseInt(eventId));
+        console.log("Added to event group!");
+
+        connection.on("ReceiveParticipant", async (participantName) => {
+          console.log("Receive participant triggered!");
+          setEventState((prev) => {
+            return {
+              ...prev,
+              data: {
+                ...prev.data,
+                participants: [...prev.data.participants, participantName],
+              },
+            };
+          });
+        });
+      } catch (err) {
+        console.log(err);
+        setTimeout(start, 5000);
+      }
+    };
+
+    connection.onclose(async () => {
+      await start();
+    });
+    start();
   }, [eventId]);
 
   async function handleDelete(e) {
@@ -146,6 +189,15 @@ export default function EventDetails() {
   }
 
   async function handleApply() {
+    if (!(await authService.isAuthenticated())) {
+      const returnUrl = window.location.href;
+      const redirectUrl = `${ApplicationPaths.Login}?${
+        QueryParameterNames.ReturnUrl
+      }=${encodeURIComponent(returnUrl)}`;
+      navigate(redirectUrl);
+      return;
+    }
+
     const token = await authService.getAccessToken();
     const response = await fetch(`api/Events/Apply/${eventId}`, {
       method: "POST",

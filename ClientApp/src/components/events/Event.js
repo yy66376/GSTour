@@ -1,6 +1,5 @@
-﻿import { Row, Col } from "reactstrap";
+import { Row, Col } from "reactstrap";
 import {
-  Controller,
   CalendarFill,
   PersonFill,
   GeoAltFill,
@@ -27,6 +26,8 @@ export default function Event(props) {
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
+      hour: "numeric",
+      minute: "numeric",
     });
   }
 

@@ -20,6 +20,7 @@ public class Event
     public int ParticipantsPerGame { get; set; }
     public int FirstRoundGameCount { get; set; }
     public string? BracketJson { get; set; } = null;
+    public DateTime CreationDateTime { get; set; } = DateTime.Now;
 
     // Navigational Properties
     [System.Text.Json.Serialization.JsonIgnore]
