@@ -42,7 +42,9 @@ export function Home() {
       }
     };
     const populateEventData = async () => {
-      const response = await fetch("api/Events?sort=date_desc&pageSize=8");
+      const response = await fetch(
+        "api/Events?sort=creation_date_desc&pageSize=8"
+      );
       if (response.ok) {
         setEventState({ data: await response.json(), loading: false });
       } else {

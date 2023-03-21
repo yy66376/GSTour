@@ -1,6 +1,5 @@
 ﻿using GDTour.Models;
 using Microsoft.AspNetCore.Identity;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GDTour.Areas.Identity.Data;
@@ -13,7 +12,8 @@ public class GDTourUser : IdentityUser
     [PersonalData] public string LastName { get; set; }
 
     public ICollection<Alert> Alerts { get; set; }
-    [NotMapped]
+    [InverseProperty("Organizer")]
     public ICollection<Event> OrganizedEvents { get; set; }
-    public ICollection<UserEvent> UserEvents { get; set; }
+    
+    public ICollection<Event> ParticipatingEvents { get; set; }
 }

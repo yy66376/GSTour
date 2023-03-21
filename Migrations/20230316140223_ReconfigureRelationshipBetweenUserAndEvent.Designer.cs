@@ -4,6 +4,7 @@ using GDTour.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GDTour.Migrations
 {
     [DbContext(typeof(GDTourContext))]
-    partial class GDTourContextModelSnapshot : ModelSnapshot
+    [Migration("20230316140223_ReconfigureRelationshipBetweenUserAndEvent")]
+    partial class ReconfigureRelationshipBetweenUserAndEvent
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -266,7 +269,7 @@ namespace GDTour.Migrations
                         .HasColumnType("bit");
 
                     b.Property<decimal?>("FulFilledPrice")
-                        .HasColumnType("smallmoney");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime?>("FulfillDate")
                         .HasColumnType("datetime2");
@@ -282,7 +285,7 @@ namespace GDTour.Migrations
                         .HasColumnType("bit");
 
                     b.Property<decimal>("PriceThreshold")
-                        .HasColumnType("smallmoney");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<bool>("Read")
                         .HasColumnType("bit");
@@ -359,13 +362,13 @@ namespace GDTour.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<decimal?>("FinalPrice")
-                        .HasColumnType("smallmoney");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("HeaderImageUrl")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal?>("InitialPrice")
-                        .HasColumnType("smallmoney");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<bool>("IsFree")
                         .HasColumnType("bit");

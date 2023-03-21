@@ -9,5 +9,5 @@ public record EventPageDTO
     public bool HasNextPage { get; set; }
 
     public int TotalResults { get; set; }
-    public EventListDTO[] Events {get;set;}
+    public EventListDTO[] Events { get; set; }
 }

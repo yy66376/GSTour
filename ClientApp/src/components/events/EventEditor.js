@@ -118,7 +118,6 @@ export default function EventEditor() {
     const newdata = { ...eventState.data };
     newdata[e.target.name] = e.target.value;
     setEventState({ data: newdata, loading: false });
-    console.log(newdata);
   }
 
   function cancelClickHandler() {

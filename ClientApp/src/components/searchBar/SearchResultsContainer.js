@@ -3,6 +3,7 @@ import SearchResult from "./SearchResult";
 import { Link } from "react-router-dom";
 
 export default function SearchResultsContainer({
+  category,
   searchData,
   searchTerm,
   onResultClick,
@@ -10,13 +11,12 @@ export default function SearchResultsContainer({
   if (searchData.count === undefined || searchData.items === undefined) {
     return null;
   }
-  console.log(searchTerm);
   return (
     <div id="search-results-outer">
-      <div className="game-heading">
+      <div className="result-heading">
         <h6>
-          Games
-          <span id="search-results-count" className="badge bg-secondary">
+          {category}
+          <span id="search-results-count" className="badge bg-secondary ms-2">
             {searchData.count}
           </span>
         </h6>
@@ -30,15 +30,20 @@ export default function SearchResultsContainer({
           />
         )}
         {searchData.items.length > 0 &&
-          searchData.items.map((game) => {
+          searchData.items.map((item) => {
             return (
-              <SearchResult key={game.id} item={game} onClick={onResultClick} />
+              <SearchResult
+                key={item.id}
+                category={category}
+                item={item}
+                onClick={onResultClick}
+              />
             );
           })}
       </div>
       <div id="search-results-show-more">
         <Link
-          to={`/Games?search=${searchTerm}`}
+          to={`/${category}?search=${searchTerm}`}
           className="btn btn-secondary mx-auto mb-3"
           onClick={onResultClick}
         >

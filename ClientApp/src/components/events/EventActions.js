@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import { Col, FormGroup, Input, Label, Row } from "reactstrap";
-import authService from "../api-authorization/AuthorizeService";
+import { Col, Input, Label, Row } from "reactstrap";
 import "./EventActions.css";
 
 export default function GameActions({
@@ -21,13 +20,15 @@ export default function GameActions({
   useEffect(() => {
     setSelectedPageSize(pageSize);
     setSelectedSort(sort);
-  }, [sort, pageSize]);
+    setSelectedFilter(filter);
+  }, [sort, pageSize, filter]);
 
   const resultStart = (page - 1) * pageSize + 1;
   const resultEnd = (page - 1) * pageSize + currentPageSize;
 
   const pageSizes = [15, 20, 40, 50];
   const sortOptions = [
+    { name: "...", value: "default" },
     { name: "Names (A-Z)", value: "name_asc" },
     { name: "Names (Z-A)", value: "name_desc" },
     { name: "Event Date (Closest)", value: "date_asc" },
@@ -85,24 +86,26 @@ export default function GameActions({
           </Input>
         </div>
 
-        <div id="event-filter" className="me-3">
-          {/* Filters */}
-          <Label for="filter-select">Filter by: &nbsp;</Label>
-          <Input
-            className="form-select-sm"
-            type="select"
-            name="filter-select"
-            id="filter-select"
-            onChange={filterChangeHandler}
-            value={selectedFilter}
-          >
-            {filterOptions.map((filterOption) => (
-              <option key={filterOption.value} value={filterOption.value}>
-                {filterOption.name}
-              </option>
-            ))}
-          </Input>
-        </div>
+        {
+          <div id="event-filter" className="me-3">
+            {/* Filters */}
+            <Label for="filter-select">Filter by: &nbsp;</Label>
+            <Input
+              className="form-select-sm"
+              type="select"
+              name="filter-select"
+              id="filter-select"
+              onChange={filterChangeHandler}
+              value={selectedFilter}
+            >
+              {filterOptions.map((filterOption) => (
+                <option key={filterOption.value} value={filterOption.value}>
+                  {filterOption.name}
+                </option>
+              ))}
+            </Input>
+          </div>
+        }
 
         {/* Sorting results */}
         <div id="page-sort">
@@ -115,7 +118,6 @@ export default function GameActions({
             onChange={pageSortChangeHandler}
             value={selectedSort}
           >
-            <option value="default">...</option>
             {sortOptions.map((sortOption) => (
               <option key={sortOption.value} value={sortOption.value}>
                 {sortOption.name}

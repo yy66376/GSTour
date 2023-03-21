@@ -4,35 +4,40 @@ import "./SearchBar.css";
 import SearchButton from "./SearchButton";
 import SearchInput from "./SearchInput";
 import SearchResultsContainer from "./SearchResultsContainer";
+import SearchFilter from "./SearchFilter";
 
 const minLen = 2;
 
+export const Category = {
+  Games: "Games",
+  Events: "Events",
+};
+
 export default function SearchBar({ showSearch, onShowSearch, onHideSearch }) {
   const [timeoutId, setTimeoutId] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [searchData, setSearchData] = useState({});
+  const [searchData, setSearchData] = useState({
+    data: {},
+    term: "",
+    category: Category.Games,
+  });
   const navigate = useNavigate();
 
-  const onTypeHandler = (event) => {
-    const newSearchTerm = event.target.value;
-    setSearchTerm(newSearchTerm);
-
-    // fetch search results from API
-    if (newSearchTerm.length <= minLen) {
+  const performDelayedSearch = ({ term, category }) => {
+    if (term.length <= minLen) {
       onHideSearch();
       return;
     }
     setTimeoutId((prevTimeoutId) => {
       clearTimeout(prevTimeoutId);
       return setTimeout(async () => {
-        const response = await fetch(`api/Games/Search?q=${newSearchTerm}`);
+        const response = await fetch(`api/${category}/Search?q=${term}`);
         onShowSearch();
-        if (response.ok) {
-          const newSearchData = await response.json();
-          console.log(newSearchData);
-          setSearchData(newSearchData);
-        } else if (response.status === 404) {
-          setSearchData({ count: 0, items: [] });
+        if (response.ok || response.status === 404) {
+          const newData = await response.json();
+          console.log(newData);
+          setSearchData((prev) => {
+            return { ...prev, data: newData };
+          });
         } else {
           // display error message to user
         }
@@ -40,11 +45,26 @@ export default function SearchBar({ showSearch, onShowSearch, onHideSearch }) {
     });
   };
 
+  const onTypeHandler = (event) => {
+    const newSearchTerm = event.target.value;
+    setSearchData((prev) => {
+      return {
+        ...prev,
+        term: newSearchTerm,
+      };
+    });
+
+    performDelayedSearch({
+      term: newSearchTerm,
+      category: searchData.category,
+    });
+  };
+
   const keyDownHandler = (event) => {
     if (event.key === "Enter") {
       clearTimeout(timeoutId);
       onHideSearch();
-      navigate(`/Games?search=${searchTerm}`);
+      navigate(`/${searchData.category}/?search=${searchData.term}`);
     }
   };
 
@@ -52,19 +72,50 @@ export default function SearchBar({ showSearch, onShowSearch, onHideSearch }) {
     onHideSearch();
   };
 
+  const categoryChangeHandler = () => {
+    setSearchData((prev) => {
+      return {
+        ...prev,
+        category:
+          prev.category === Category.Games ? Category.Events : Category.Games,
+      };
+    });
+
+    performDelayedSearch({
+      term: searchData.term,
+      category:
+        searchData.category === Category.Games
+          ? Category.Events
+          : Category.Games,
+    });
+  };
+
   return (
     <div id="search-container">
       <div className="content">
         <div className="search">
-          <SearchInput onType={onTypeHandler} onKeyDown={keyDownHandler} />
-          <SearchButton />
+          <div className="search__input_container">
+            <SearchInput
+              onType={onTypeHandler}
+              onKeyDown={keyDownHandler}
+              category={searchData.category}
+            />
+          </div>
+          <div className="search__filter_button">
+            <SearchFilter
+              category={searchData.category}
+              onCategoryChange={categoryChangeHandler}
+            />
+            <SearchButton />
+          </div>
         </div>
       </div>
 
       {showSearch ? (
         <SearchResultsContainer
-          searchTerm={searchTerm}
-          searchData={searchData}
+          category={searchData.category}
+          searchTerm={searchData.term}
+          searchData={searchData.data}
           onResultClick={onResultClickHandler}
         />
       ) : null}

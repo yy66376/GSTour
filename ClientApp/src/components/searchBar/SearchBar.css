@@ -26,6 +26,7 @@
   --size: 60px;
   border: 2px solid var(--clr-primary);
   display: flex;
+  justify-content: flex-end;
   border-radius: 100px;
   overflow: hidden;
   font-size: 1em;
@@ -44,4 +45,12 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end;
+}
+
+.search__filter_button {
+  display: flex;
+}
+
+.search__input_container {
+  flex-grow: 1;
 }

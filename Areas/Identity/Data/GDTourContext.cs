@@ -11,18 +11,17 @@ namespace GDTour.Data;
 
 public class GDTourContext : ApiAuthorizationDbContext<GDTourUser>
 {
+    public GDTourContext(DbContextOptions options, IOptions<OperationalStoreOptions> operationalStoreOptions)
+        : base(options, operationalStoreOptions)
+    {
+    }
+
     public DbSet<Game> Games { get; set; }
     public DbSet<Movie> Movies { get; set; }
     public DbSet<Screenshot> Screenshots { get; set; }
     public DbSet<Alert> Alerts { get; set; }
     public DbSet<GDTourUser> GDTourUsers { get; set; }
-    public DbSet<UserEvent> UserEvents { get; set; }
     public DbSet<Event> Events { get; set; }
-
-    public GDTourContext(DbContextOptions options, IOptions<OperationalStoreOptions> operationalStoreOptions)
-        : base(options, operationalStoreOptions)
-    {
-    }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -37,6 +36,22 @@ public class GDTourContext : ApiAuthorizationDbContext<GDTourUser>
             b.Property(game => game.ReleaseDate)
                 .HasConversion<DateOnlyConverter, DateOnlyComparer>()
                 .HasColumnType("date");
+        });
+        
+        // specify money column type for decimal properties
+        builder.Entity<Alert>(b =>
+        {
+            b.Property(alert => alert.FulFilledPrice)
+                .HasColumnType("smallmoney");
+            b.Property(alert => alert.PriceThreshold)
+                .HasColumnType("smallmoney");
+        });
+        builder.Entity<Game>(b =>
+        {
+            b.Property(game => game.InitialPrice)
+                .HasColumnType("smallmoney");
+            b.Property(game => game.FinalPrice)
+                .HasColumnType("smallmoney");
         });
 
         // configure one-to-many relationship between game and movies
@@ -63,28 +78,25 @@ public class GDTourContext : ApiAuthorizationDbContext<GDTourUser>
             .WithOne(a => a.Game)
             .HasForeignKey(a => a.GameId);
 
-        //configure many to many relationship between user and events
-        builder.Entity<UserEvent>()
-            .HasOne<GDTourUser>(ue => ue.Participant)
-            .WithMany(user => user.UserEvents)
-            .HasForeignKey(ue => ue.ParticipantId);
-        builder.Entity<UserEvent>()
-            .HasOne<Event>(ue => ue.Event)
-            .WithMany(ev => ev.UserEvents)
-            .HasForeignKey(ue => ue.EventId);
-
-        //configure one-to-many relationship between user and event
-        builder.Entity<Event>()
-            .HasOne<GDTourUser>(ev => ev.Organizer)
-            .WithMany(use => use.OrganizedEvents)
+        // configure one-to-many relationship between user (organizer) and event
+        builder.Entity<GDTourUser>()
+            .HasMany<Event>(u => u.OrganizedEvents)
+            .WithOne(e => e.Organizer)
             .HasForeignKey(ev => ev.OrganizerId)
-            .HasPrincipalKey(use => use.Id);
+            .OnDelete(DeleteBehavior.SetNull);
+        
+        // configure many-to-many relationship between users (participants) and events
+        builder.Entity<GDTourUser>()
+            .HasMany<Event>(u => u.ParticipatingEvents)
+            .WithMany(e => e.Participants)
+            .UsingEntity(j => j.ToTable("UserEvents"));
 
         //configure one-to-many relationship between game and event
-        builder.Entity<Event>()
-            .HasOne<Game>(ev => ev.Game)
-            .WithMany(g => g.Events)
-            .HasForeignKey(ev => ev.GameId);
+        builder.Entity<Game>()
+            .HasMany<Event>(g => g.Events)
+            .WithOne(e => e.Game)
+            .HasForeignKey(ev => ev.GameId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 
     public class DateOnlyConverter : ValueConverter<DateOnly, DateTime>
@@ -104,6 +116,4 @@ public class GDTourContext : ApiAuthorizationDbContext<GDTourUser>
         {
         }
     }
-
-    public DbSet<GDTour.Models.Event> Event { get; set; } = default!;
 }

@@ -35,9 +35,9 @@ export default function Events() {
   let pageSize = parseInt(
     searchParams.get("pageSize") ? searchParams.get("pageSize") : 10
   );
-  let sort = searchParams.get("sort");
+  let sort = searchParams.get("sort") || "default";
   let search = searchParams.get("search");
-  let filter = searchParams.get("filter");
+  let filter = searchParams.get("filter") || "all";
 
   const fetchEventData = useCallback(async () => {
     const params = getDefinedParams(
@@ -57,7 +57,7 @@ export default function Events() {
           },
     });
     let data = null;
-    if (response.ok) {
+    if (response.ok || response.status === 404) {
       data = await response.json();
     } else {
       // tell user that game api is down
@@ -68,7 +68,6 @@ export default function Events() {
   // populate events when the component mounts
   useEffect(() => {
     const populateEventsData = async () => {
-      console.log("fetching new data");
       const response = await fetchEventData();
       if (response !== null) {
         setEventState({ data: response, loading: false });
@@ -91,7 +90,8 @@ export default function Events() {
       ["page", page],
       ["pageSize", pageSize],
       ["sort", sort],
-      ["search", search]
+      ["search", search],
+      ["filter", filter]
     );
     setSearchParams(definedParams);
   };
@@ -155,22 +155,38 @@ export default function Events() {
         </div>
 
         <Container className="p-0">
-          {/* {events.length === 0 && } */}
-          {events.map((g) => {
-            return (
-              <Event
-                key={g.id}
-                id={g.id}
-                name={g.name}
-                date={g.date}
-                location={g.location}
-                game={g.game}
-                organizerName={g.organizerName}
-                headerImageUrl={g.headerImageUrl}
-                firstRoundGameCount={g.firstRoundGameCount}
+          {events.length === 0 && (
+            <>
+              <p className="text-center search-results-none-found-header mt-4">
+                There are no events matching your search term "{search}" with
+                the applied filter "{filter}"
+              </p>
+              <img
+                className="img-fluid  d-block m-auto"
+                src={process.env.PUBLIC_URL + "/images/dead_file.png"}
+                alt="No search results found"
               />
-            );
-          })}
+              <p className="text-center search-results-none-found-footer">
+                Please try another search term.
+              </p>
+            </>
+          )}
+          {events.length > 0 &&
+            events.map((g) => {
+              return (
+                <Event
+                  key={g.id}
+                  id={g.id}
+                  name={g.name}
+                  date={g.date}
+                  location={g.location}
+                  game={g.game}
+                  organizerName={g.organizerName}
+                  headerImageUrl={g.headerImageUrl}
+                  firstRoundGameCount={g.firstRoundGameCount}
+                />
+              );
+            })}
         </Container>
 
         <ReactPaginate

@@ -2,11 +2,14 @@ using GDTour.Areas.Identity.Data;
 using GDTour.Data;
 using GDTour.Hubs;
 using GDTour.Models;
+using GDTour.Models.Repositories;
+using GDTour.Models.Utility;
 using GDTour.Services.Email;
 using GDTour.Services.Quartz.Jobs;
 using GDTour.Services.SignalR;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
@@ -31,6 +34,7 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services
     .AddDefaultIdentity<GDTourUser>(options => options.SignIn.RequireConfirmedAccount = true)
+    .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<GDTourContext>();
 builder.Services.AddIdentityServer().AddApiAuthorization<GDTourUser, GDTourContext>();
 builder.Services.AddAuthentication().AddIdentityServerJwt();
@@ -85,6 +89,10 @@ builder.Services.AddQuartz(q =>
 
 builder.Services.AddQuartzHostedService(opt => { opt.WaitForJobsToComplete = true; });
 
+// Register repositories
+builder.Services.AddScoped<IGamesRepository, GamesRepository>();
+builder.Services.AddScoped<IEventsRepository, EventsRepository>();
+
 var app = builder.Build();
 
 // Seed data
@@ -92,6 +100,18 @@ using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     await SeedData.Initialize(services);
+}
+
+// Create admin account
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var adminPassword = builder.Configuration.GetValue<string>("AdminAcctPW");
+    if (adminPassword == null)
+    {
+        throw new Exception("You must set an admin password with the name \"AdminAcctPW\"");
+    }
+    await CreateAdminAcct.Initialize(services, adminPassword);
 }
 
 // Configure the HTTP request pipeline.

@@ -13,6 +13,7 @@
     "jquery": "^3.6.0",
     "merge": "^2.1.1",
     "oidc-client": "^1.11.5",
+    "pluralize": "^8.0.0",
     "react": "^18.2.0",
     "react-bootstrap-icons": "^1.10.2",
     "react-brackets": "^0.4.7",

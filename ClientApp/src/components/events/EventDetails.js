@@ -205,21 +205,21 @@ export default function EventDetails() {
     });
 
     if (!response.ok) {
-      if (response.status === 400) {
+      if (response.status === 404) {
+        toast.error("🛑 The event does not exist. 🛑", {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "dark",
+        });
+      } else if (response.status === 400) {
         const errorText = await response.text();
-        if (errorText === "EventAlreadyAppliedError")
+        if (errorText === "EventAlreadyAppliedError") {
           toast.error("🛑 You have already applied to this event. 🛑", {
-            position: "top-center",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "dark",
-          });
-        else if (errorText === "EventDoesNotExist") {
-          toast.error("🛑 The event does not exist. 🛑", {
             position: "top-center",
             autoClose: 5000,
             hideProgressBar: false,

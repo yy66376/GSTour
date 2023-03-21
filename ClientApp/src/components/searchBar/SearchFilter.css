@@ -1,0 +1,10 @@
+﻿.search__filter {
+  --size: 60px;
+  display: none;
+}
+
+.search:focus-within .search__filter {
+  display: block;
+  z-index: 4;
+  margin: auto 10px;
+}

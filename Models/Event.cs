@@ -23,22 +23,10 @@ public class Event
     public DateTime CreationDateTime { get; set; } = DateTime.Now;
 
     // Navigational Properties
-    [System.Text.Json.Serialization.JsonIgnore]
     public int GameId { get; set; }
-
-    [System.Text.Json.Serialization.JsonIgnore]
     public Game Game { get; set; }
 
-    [System.Text.Json.Serialization.JsonIgnore]
-    public string OrganizerId { get; set; }
-
-    [System.Text.Json.Serialization.JsonIgnore]
-    public GDTourUser Organizer { get; set; }
-
-    [NotMapped]
-    [System.Text.Json.Serialization.JsonIgnore]
+    public string? OrganizerId { get; set; }
+    public GDTourUser? Organizer { get; set; }
     public ICollection<GDTourUser> Participants { get; set; }
-
-    [System.Text.Json.Serialization.JsonIgnore]
-    public ICollection<UserEvent> UserEvents { get; set; }
 }

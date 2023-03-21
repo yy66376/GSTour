@@ -45,7 +45,7 @@ export default function Games() {
     );
     const response = await fetch("api/Games?" + new URLSearchParams(params));
     let data = null;
-    if (response.ok) {
+    if (response.ok || response.status === 404) {
       data = await response.json();
     } else {
       // tell user that game api is down
@@ -101,7 +101,7 @@ export default function Games() {
       return (
         <>
           <p className="text-center search-results-none-found-header mt-4">
-            There are no search games matching your search term: {search}
+            There are no games matching your search term: {search}
           </p>
           <img
             className="img-fluid  d-block m-auto"

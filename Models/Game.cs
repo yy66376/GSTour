@@ -40,5 +40,5 @@ public class Game
     public ICollection<Screenshot> Screenshots { get; set; }
     public ICollection<Movie> Movies { get; set; }
     public ICollection<Alert> Alerts { get; set; }
-    [JsonIgnore] public ICollection<Event> Events { get; set; }
+    public ICollection<Event> Events { get; set; }
 }

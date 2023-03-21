@@ -14,8 +14,8 @@ public class EventDetailDTO
     public int FirstRoundGameCount { get; set; }
     public string HeaderImageUrl { get; set; }
     public int GameId { get; set; }
-    public string OrganizerId { get; set; }
-    public string OrganizerName { get; set; }
-    public string BracketJson { get; set; }
+    public string? OrganizerId { get; set; }
+    public string? OrganizerName { get; set; }
+    public string? BracketJson { get; set; }
     public string[] Participants { get; set; }
 }

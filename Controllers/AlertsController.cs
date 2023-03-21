@@ -44,11 +44,12 @@ public class AlertsController : ControllerBase
     {
         var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
 
-        var alertsQuery = _context.Alerts.Include(a => a.Game).Where(a => a.GDTourUserId == currentUserId);
-        if (gameId != -1) alertsQuery = alertsQuery.Where(a => a.GameId == gameId);
-        var alerts = await alertsQuery
-            .AsNoTracking()
-            .ToListAsync();
+        var alertsQuery = _context.Alerts
+            .Include(a => a.Game)
+            .Where(a => a.GDTourUserId == currentUserId);
+        if (gameId != -1)
+            alertsQuery = alertsQuery.Where(a => a.GameId == gameId);
+        var alerts = await alertsQuery.AsNoTracking().ToListAsync();
 
         return Ok(alerts.Select(CreateAlertDetailDTO));
     }
@@ -193,9 +194,7 @@ public class AlertsController : ControllerBase
         _context.Alerts.Remove(alert);
         await _context.SaveChangesAsync();
 
-        await _notificationHub.Clients
-            .User(currentUserId)
-            .DeleteNotification(id, isFulfilled);
+        await _notificationHub.Clients.User(currentUserId).DeleteNotification(id, isFulfilled);
 
         return NoContent();
     }
@@ -212,13 +211,13 @@ public class AlertsController : ControllerBase
             return NotFound();
         if (alert.GDTourUserId != currentUserId)
             return Forbid();
-        if (!alert.IsFulfilled || alert.Read) return BadRequest();
+        if (!alert.IsFulfilled || alert.Read)
+            return BadRequest();
 
         alert.Read = true;
         await _context.SaveChangesAsync();
 
-        await _notificationHub.Clients.User(currentUserId)
-            .ReadNotification(id);
+        await _notificationHub.Clients.User(currentUserId).ReadNotification(id);
         return NoContent();
     }
 
